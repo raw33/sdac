@@ -19,7 +19,14 @@ export default async function AppLayout({
             <a className="text-sm font-semibold tracking-tight" href="/">
               SDAC
             </a>
-            <div className="text-xs text-zinc-500">Dashboard</div>
+            <nav className="ml-2 hidden items-center gap-3 text-sm text-zinc-600 sm:flex">
+              <a className="hover:underline" href="/app">
+                Links
+              </a>
+              <a className="hover:underline" href="/app/leads">
+                Leads
+              </a>
+            </nav>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden text-sm text-zinc-600 sm:block">
@@ -33,4 +40,3 @@ export default async function AppLayout({
     </div>
   );
 }
-
