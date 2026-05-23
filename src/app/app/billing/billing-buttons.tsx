@@ -16,9 +16,13 @@ export default function BillingButtons({
     setLoading(kind);
     setError(null);
     const res = await fetch(path, { method: "POST" });
+<<<<<<< HEAD
     const json = (await res.json().catch(() => null)) as
       | { url?: string; error?: string }
       | null;
+=======
+    const json = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
+>>>>>>> 97af2fe (Add billing subscriptions and onboarding)
     if (!res.ok || !json?.url) {
       setError(json?.error || "Could not start billing.");
       setLoading(null);

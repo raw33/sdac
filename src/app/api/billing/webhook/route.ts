@@ -42,8 +42,12 @@ export async function POST(req: Request) {
         await prisma.organization.update({
           where: { id: orgId },
           data: {
+<<<<<<< HEAD
             stripeCustomerId:
               typeof session.customer === "string" ? session.customer : undefined,
+=======
+            stripeCustomerId: typeof session.customer === "string" ? session.customer : undefined,
+>>>>>>> 97af2fe (Add billing subscriptions and onboarding)
             stripeSubscriptionId: sub.id,
             subscriptionStatus: sub.status,
             currentPeriodEnd: toDate(sub.current_period_end),
