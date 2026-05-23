@@ -1,5 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +13,15 @@ const credentialsSchema = z.object({
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: "Email + Password",
       credentials: {
@@ -26,6 +36,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: parsed.data.email.toLowerCase() },
         });
         if (!user) return null;
+        if (!user.passwordHash) return null;
 
         const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!ok) return null;
@@ -35,8 +46,40 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account }) {
+      if (!user.email) return false;
+
+      if (account?.provider && account.provider !== "credentials") {
+        const email = user.email.toLowerCase();
+        await prisma.user.upsert({
+          where: { email },
+          create: {
+            email,
+            name: user.name ?? null,
+            passwordHash: null,
+          },
+          update: {
+            name: user.name ?? undefined,
+          },
+          select: { id: true },
+        });
+      }
+
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user?.id) token.sub = user.id;
+
+      if (account?.provider && account.provider !== "credentials") {
+        const email = token.email || user?.email;
+        if (email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: email.toLowerCase() },
+            select: { id: true },
+          });
+          if (dbUser?.id) token.sub = dbUser.id;
+        }
+      }
       return token;
     },
     async session({ session, token }) {
