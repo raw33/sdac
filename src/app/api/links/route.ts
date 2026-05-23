@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
+import { getOrgBillingStatus } from "@/lib/billing";
 
 const createSchema = z.object({
   destinationUrl: z.string().url(),
@@ -43,6 +44,22 @@ export async function POST(req: Request) {
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) return Response.json({ error: "No org" }, { status: 400 });
 
+  const billing = await getOrgBillingStatus(orgId);
+  if (!billing.isPaid) {
+    const linkCount = await prisma.link.count({
+      where: { orgId, archivedAt: null },
+    });
+    if (linkCount >= 1) {
+      return Response.json(
+        {
+          error: "Trial limit reached. Upgrade to create more links.",
+          code: "TRIAL_LIMIT",
+        },
+        { status: 402 },
+      );
+    }
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {
@@ -74,4 +91,3 @@ export async function POST(req: Request) {
 
   return Response.json({ error: "Could not create link" }, { status: 500 });
 }
-
