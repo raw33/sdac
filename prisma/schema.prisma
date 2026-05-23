@@ -84,3 +84,27 @@ model ClickEvent {
 
   @@index([linkId, clickedAt])
 }
+
+model Lead {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  name   String?
+  email  String?
+  org    String?
+
+  county     String?
+  population Int?
+
+  message String?
+  source  String?
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  ipHash String?
+
+  @@index([createdAt])
+  @@index([email])
+}
