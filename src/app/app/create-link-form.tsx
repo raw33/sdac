@@ -9,6 +9,7 @@ export default function CreateLinkForm() {
   const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [trialLimitReached, setTrialLimitReached] = useState(false);
   const [created, setCreated] = useState<{ code: string; id: string } | null>(
     null,
   );
@@ -20,6 +21,7 @@ export default function CreateLinkForm() {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+        setTrialLimitReached(false);
         setCreated(null);
         const res = await fetch("/api/links", {
           method: "POST",
@@ -28,9 +30,10 @@ export default function CreateLinkForm() {
         });
         if (!res.ok) {
           const body = (await res.json().catch(() => null)) as
-            | { error?: string }
+            | { error?: string; code?: string }
             | null;
           setError(body?.error || "Could not create link.");
+          if (body?.code === "TRIAL_LIMIT") setTrialLimitReached(true);
           setIsLoading(false);
           return;
         }
@@ -68,7 +71,17 @@ export default function CreateLinkForm() {
 
       {error ? (
         <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>{error}</div>
+            {trialLimitReached ? (
+              <a
+                className="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-medium hover:bg-red-100"
+                href="/app/billing"
+              >
+                Upgrade
+              </a>
+            ) : null}
+          </div>
         </div>
       ) : null}
 
