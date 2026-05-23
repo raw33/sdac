@@ -16,9 +16,7 @@ export default function BillingButtons({
     setLoading(kind);
     setError(null);
     const res = await fetch(path, { method: "POST" });
-    const json = (await res.json().catch(() => null)) as
-      | { url?: string; error?: string }
-      | null;
+    const json = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
     if (!res.ok || !json?.url) {
       setError(json?.error || "Could not start billing.");
       setLoading(null);
