@@ -9,3 +9,10 @@ export async function getUserPrimaryOrgId(userId: string) {
   return membership?.orgId ?? null;
 }
 
+export async function getUserOrgRole(userId: string, orgId: string) {
+  const membership = await prisma.orgMember.findUnique({
+    where: { userId_orgId: { userId, orgId } },
+    select: { role: true },
+  });
+  return membership?.role ?? null;
+}
