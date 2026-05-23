@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  memberships  OrgMember[]
+  linksCreated Link[]      @relation("LinksCreated")
+}
+
+model Organization {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  createdAt   DateTime    @default(now())
+  members     OrgMember[]
+  links       Link[]
+}
+
+model OrgMember {
+  id        String       @id @default(cuid())
+  role      OrgRole      @default(MEMBER)
+  createdAt DateTime     @default(now())
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId String
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+  @@index([userId])
+}
+
+model Link {
+  id             String        @id @default(cuid())
+  code           String        @unique
+  destinationUrl String
+  title          String?
+  createdAt      DateTime      @default(now())
+  archivedAt     DateTime?
+  expiresAt      DateTime?
+
+  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId String
+
+  createdBy   User   @relation("LinksCreated", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdByUserId String
+
+  clicks ClickEvent[]
+
+  @@index([orgId, createdAt])
+  @@index([code])
+}
+
+model ClickEvent {
+  id        String   @id @default(cuid())
+  clickedAt DateTime @default(now())
+  referer   String?
+  userAgent String?
+  ipHash    String?
+
+  link   Link   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  linkId String
+
+  @@index([linkId, clickedAt])
+}
