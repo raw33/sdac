@@ -15,9 +15,19 @@ export default function LoginPage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
           <p className="text-sm text-zinc-600">
-            Use your SDAC account email and password.
+            Use your SDAC account, or sign in with Google.
           </p>
         </div>
+
+        <button
+          className="h-11 rounded-lg border border-zinc-200 bg-white text-sm font-medium hover:bg-zinc-50"
+          type="button"
+          onClick={() => {
+            void signIn("google", { callbackUrl: "/app" });
+          }}
+        >
+          Continue with Google
+        </button>
 
         <form
           className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm"
