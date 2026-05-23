@@ -73,7 +73,11 @@ export default function LoginPage() {
         </form>
 
         <p className="text-xs text-zinc-500">
-          Admin note: for the MVP we seed accounts from the server side.
+          First time? Visit{" "}
+          <a className="underline" href="/setup">
+            /setup
+          </a>{" "}
+          to create the initial owner account.
         </p>
       </div>
     </div>
