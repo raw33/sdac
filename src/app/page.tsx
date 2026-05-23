@@ -4,12 +4,20 @@ export default function Home() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-16">
         <header className="flex items-center justify-between">
           <div className="text-sm font-semibold tracking-tight">SDAC</div>
-          <a
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-            href="/login"
-          >
-            Sign in
-          </a>
+          <div className="flex items-center gap-4">
+            <a className="text-sm underline" href="/pricing">
+              Pricing
+            </a>
+            <a className="text-sm underline" href="/demo">
+              Request demo
+            </a>
+            <a
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+              href="/login"
+            >
+              Sign in
+            </a>
+          </div>
         </header>
 
         <main className="grid gap-10 md:grid-cols-2 md:items-center">
@@ -24,15 +32,15 @@ export default function Home() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <a
                 className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800"
-                href="/login"
+                href="/demo"
               >
-                Open dashboard
+                Request a demo
               </a>
               <a
                 className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium hover:bg-zinc-50"
-                href="/s/demo"
+                href="/pricing"
               >
-                See redirect demo
+                See pricing
               </a>
             </div>
           </div>
@@ -48,6 +56,13 @@ export default function Home() {
               </ul>
               <div className="mt-4 rounded-lg bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
                 Example: https://sdac.org/s/parks → your long URL
+              </div>
+              <div className="mt-4 text-xs text-zinc-500">
+                Already have access?{" "}
+                <a className="underline" href="/login">
+                  Sign in
+                </a>
+                .
               </div>
             </div>
           </div>
