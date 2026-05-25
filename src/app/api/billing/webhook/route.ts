@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       if (session.mode === "subscription" && session.subscription && orgId) {
         const subRes = await stripe.subscriptions.retrieve(session.subscription);
         const sub = (subRes as unknown as { data?: unknown }).data ?? subRes;
+
         await prisma.organization.update({
           where: { id: orgId },
           data: {
