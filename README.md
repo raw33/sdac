@@ -1,4 +1,4 @@
-SDAC (sdac.org) is a multi-tenant short-link + QR + analytics MVP for civic orgs (municipalities, chambers, EDOs).
+SDAK (sdak.org) is a multi-tenant short-link + QR + analytics MVP for civic orgs (municipalities, chambers, EDOs).
 
 ## What’s in the MVP
 - Password login (NextAuth credentials)
@@ -11,8 +11,10 @@ SDAC (sdac.org) is a multi-tenant short-link + QR + analytics MVP for civic orgs
 Create `.env` (or copy from `.env.example` if you add one) with:
 - `DATABASE_URL` (Postgres)
 - `NEXTAUTH_SECRET`
+- `NEXTAUTH_URL` (e.g. `http://localhost:3000` locally, your real URL in prod)
 - `IP_HASH_SALT` (recommended)
 - Optional: `PUBLIC_BASE_URL` (used for QR generation behind proxies)
+- Optional billing (Stripe): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`
 - Optional seed defaults: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ORG_NAME`, `ORG_SLUG`
 
 ### 2) Generate Prisma client
@@ -37,8 +39,10 @@ Note: this project forces webpack (`next dev --webpack` / `next build --webpack`
 Set these environment variables in your host:
 - `DATABASE_URL` (managed Postgres such as Neon/Supabase/RDS)
 - `NEXTAUTH_SECRET` (random 32+ bytes)
+- `NEXTAUTH_URL` (e.g. `https://sdak.org`)
 - `IP_HASH_SALT` (random 32+ bytes)
-- `PUBLIC_BASE_URL` (e.g. `https://sdac.org`)
+- `PUBLIC_BASE_URL` (e.g. `https://sdak.org`)
+ - (If billing enabled) `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`
 
 Then deploy as a standard Next.js app. Run `npm run db:deploy` against the production database once per release (or wire it into your CI).
 
@@ -46,3 +50,6 @@ More: `docs/DEPLOYMENT.md`.
 
 ## Admin login (after seed)
 Go to `/login` and sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
+
+## Self-serve signup
+Go to `/signup` to create an account + organization, then you’ll be redirected to billing checkout.

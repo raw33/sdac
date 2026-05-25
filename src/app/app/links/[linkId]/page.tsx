@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
+import { getOrgBillingStatus } from "@/lib/billing";
 
 function safeHost(value: string | null) {
   if (!value) return null;
@@ -24,6 +25,8 @@ export default async function LinkDetailPage(
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) return notFound();
 
+  const billing = await getOrgBillingStatus(orgId);
+
   const { linkId } = await props.params;
 
   const link = await prisma.link.findFirst({
@@ -39,16 +42,18 @@ export default async function LinkDetailPage(
   });
   if (!link) return notFound();
 
-  const recentClicks = await prisma.clickEvent.findMany({
-    where: { linkId: link.id },
-    orderBy: { clickedAt: "desc" },
-    take: 50,
-    select: {
-      clickedAt: true,
-      referer: true,
-      userAgent: true,
-    },
-  });
+  const recentClicks = billing.isPaid
+    ? await prisma.clickEvent.findMany({
+        where: { linkId: link.id },
+        orderBy: { clickedAt: "desc" },
+        take: 50,
+        select: {
+          clickedAt: true,
+          referer: true,
+          userAgent: true,
+        },
+      })
+    : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,14 +85,23 @@ export default async function LinkDetailPage(
           >
             QR PNG
           </a>
-          <a
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium hover:bg-zinc-50"
-            href={`/api/links/${link.id}/clicks?format=csv`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Export CSV
-          </a>
+          {billing.isPaid ? (
+            <a
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium hover:bg-zinc-50"
+              href={`/api/links/${link.id}/clicks?format=csv`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Export CSV
+            </a>
+          ) : (
+            <a
+              className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium hover:bg-zinc-50"
+              href="/app/billing"
+            >
+              Upgrade for analytics
+            </a>
+          )}
         </div>
       </div>
 
@@ -104,50 +118,56 @@ export default async function LinkDetailPage(
         <div className="border-b border-zinc-200 px-6 py-4 text-sm font-medium">
           Recent clicks
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500">
-              <tr>
-                <th className="px-6 py-3">Time</th>
-                <th className="px-6 py-3">Referrer</th>
-                <th className="px-6 py-3">User agent</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentClicks.length === 0 ? (
+        {!billing.isPaid ? (
+          <div className="px-6 py-6 text-sm text-zinc-600">
+            Upgrade to view click analytics and export CSV.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500">
                 <tr>
-                  <td className="px-6 py-8 text-zinc-500" colSpan={3}>
-                    No clicks yet.
-                  </td>
+                  <th className="px-6 py-3">Time</th>
+                  <th className="px-6 py-3">Referrer</th>
+                  <th className="px-6 py-3">User agent</th>
                 </tr>
-              ) : (
-                recentClicks.map((c, idx) => (
-                  <tr
-                    key={`${c.clickedAt.toISOString()}-${idx}`}
-                    className="border-t border-zinc-200"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {c.clickedAt.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-mono text-xs">
-                        {safeHost(c.referer) || "—"}
-                      </div>
-                      <div className="truncate text-xs text-zinc-500">
-                        {c.referer || ""}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="truncate text-xs text-zinc-500">
-                        {c.userAgent || "—"}
-                      </div>
+              </thead>
+              <tbody>
+                {recentClicks.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-8 text-zinc-500" colSpan={3}>
+                      No clicks yet.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  recentClicks.map((c, idx) => (
+                    <tr
+                      key={`${c.clickedAt.toISOString()}-${idx}`}
+                      className="border-t border-zinc-200"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {c.clickedAt.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-mono text-xs">
+                          {safeHost(c.referer) || "—"}
+                        </div>
+                        <div className="truncate text-xs text-zinc-500">
+                          {c.referer || ""}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="truncate text-xs text-zinc-500">
+                          {c.userAgent || "—"}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

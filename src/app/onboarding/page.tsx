@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
             Create your organization
           </h1>
           <p className="text-sm text-zinc-600">
-            This sets up your workspace. You can invite others later.
+            This sets up your workspace. Next, you’ll complete checkout to unlock unlimited links and analytics.
           </p>
         </div>
         <OnboardingForm />

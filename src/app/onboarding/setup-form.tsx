@@ -30,7 +30,7 @@ export default function OnboardingForm() {
           setIsLoading(false);
           return;
         }
-        router.replace("/app");
+        router.replace("/app/billing?startCheckout=1");
         router.refresh();
       }}
     >

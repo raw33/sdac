@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export default function DemoPage() {
@@ -10,19 +11,19 @@ export default function DemoPage() {
     <div className="min-h-dvh bg-zinc-50 text-zinc-900">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-16">
         <header className="flex items-center justify-between">
-          <a className="text-sm font-semibold tracking-tight" href="/">
+          <Link className="text-sm font-semibold tracking-tight" href="/">
             SDAC
-          </a>
+          </Link>
           <div className="flex items-center gap-3">
-            <a className="text-sm underline" href="/pricing">
+            <Link className="text-sm underline" href="/pricing">
               Pricing
-            </a>
-            <a
+            </Link>
+            <Link
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
               href="/login"
             >
               Sign in
-            </a>
+            </Link>
           </div>
         </header>
 
