@@ -19,12 +19,7 @@ export async function POST(req: Request) {
   if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const existingOrgId = await getUserPrimaryOrgId(userId);
-<<<<<<< HEAD
   if (existingOrgId) return Response.json({ ok: true, orgId: existingOrgId });
-=======
-  if (existingOrgId)
-    return Response.json({ ok: true, orgId: existingOrgId });
->>>>>>> 97af2fe (Add billing subscriptions and onboarding)
 
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);

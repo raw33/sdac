@@ -5,10 +5,10 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminEmail = (process.env.ADMIN_EMAIL || "admin@sdac.org").toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || "admin@sdak.org").toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || "ChangeMe123!";
-  const orgName = process.env.ORG_NAME || "SDAC";
-  const orgSlug = (process.env.ORG_SLUG || "sdac").toLowerCase();
+  const orgName = process.env.ORG_NAME || "SDAK";
+  const orgSlug = (process.env.ORG_SLUG || "sdak").toLowerCase();
 
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
@@ -34,9 +34,7 @@ async function main() {
     create: { userId: user.id, orgId: org.id, role: "OWNER" },
   });
 
-  // eslint-disable-next-line no-console
   console.log("Seeded:");
-  // eslint-disable-next-line no-console
   console.log({ adminEmail, adminPassword, orgSlug });
 }
 
@@ -45,7 +43,6 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (err) => {
-    // eslint-disable-next-line no-console
     console.error(err);
     await prisma.$disconnect();
     process.exit(1);

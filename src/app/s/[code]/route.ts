@@ -10,7 +10,7 @@ export async function GET(
   const { code } = await ctx.params;
 
   // Simple demo route so the landing page has something to click.
-  if (code === "demo") redirect("https://sdac.org");
+  if (code === "demo") redirect("https://sdak.org");
 
   const link = await prisma.link.findUnique({
     where: { code },
@@ -52,4 +52,3 @@ export async function GET(
 
   redirect(link.destinationUrl);
 }
-

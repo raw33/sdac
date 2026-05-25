@@ -38,20 +38,20 @@ export async function POST(req: Request) {
 
       const orgId = session.metadata?.orgId;
       if (session.mode === "subscription" && session.subscription && orgId) {
-        const sub = await stripe.subscriptions.retrieve(session.subscription);
+        const subRes = await stripe.subscriptions.retrieve(session.subscription);
+        const sub = (subRes as unknown as { data?: unknown }).data ?? subRes;
         await prisma.organization.update({
           where: { id: orgId },
           data: {
-<<<<<<< HEAD
-            stripeCustomerId:
-              typeof session.customer === "string" ? session.customer : undefined,
-=======
             stripeCustomerId: typeof session.customer === "string" ? session.customer : undefined,
->>>>>>> 97af2fe (Add billing subscriptions and onboarding)
-            stripeSubscriptionId: sub.id,
-            subscriptionStatus: sub.status,
-            currentPeriodEnd: toDate(sub.current_period_end),
-            cancelAtPeriodEnd: sub.cancel_at_period_end,
+            stripeSubscriptionId: (sub as { id: string }).id,
+            subscriptionStatus: (sub as { status: string }).status,
+            currentPeriodEnd: toDate(
+              (sub as { current_period_end?: number | null }).current_period_end,
+            ),
+            cancelAtPeriodEnd: Boolean(
+              (sub as { cancel_at_period_end?: boolean | null }).cancel_at_period_end,
+            ),
           },
           select: { id: true },
         });

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
+import { getOrgBillingStatus } from "@/lib/billing";
 
 const querySchema = z.object({
   format: z.enum(["json", "csv"]).optional(),
@@ -18,6 +19,17 @@ export async function GET(
 
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) return Response.json({ error: "No org" }, { status: 400 });
+
+  const billing = await getOrgBillingStatus(orgId);
+  if (!billing.isPaid) {
+    return Response.json(
+      {
+        error: "Upgrade required to view analytics.",
+        code: "UPGRADE_REQUIRED",
+      },
+      { status: 402 },
+    );
+  }
 
   const { linkId } = await ctx.params;
 

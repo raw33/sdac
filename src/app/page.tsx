@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="min-h-dvh bg-zinc-50 text-zinc-900">
@@ -5,18 +7,18 @@ export default function Home() {
         <header className="flex items-center justify-between">
           <div className="text-sm font-semibold tracking-tight">SDAC</div>
           <div className="flex items-center gap-4">
-            <a className="text-sm underline" href="/pricing">
+            <Link className="text-sm underline" href="/pricing">
               Pricing
-            </a>
-            <a className="text-sm underline" href="/demo">
+            </Link>
+            <Link className="text-sm underline" href="/demo">
               Request demo
-            </a>
-            <a
+            </Link>
+            <Link
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
               href="/login"
             >
               Sign in
-            </a>
+            </Link>
           </div>
         </header>
 
@@ -30,18 +32,18 @@ export default function Home() {
               for municipalities, chambers, and economic development orgs.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <a
+              <Link
                 className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800"
-                href="/demo"
+                href="/signup"
               >
-                Request a demo
-              </a>
-              <a
+                Get started
+              </Link>
+              <Link
                 className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium hover:bg-zinc-50"
                 href="/pricing"
               >
                 See pricing
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -55,13 +57,13 @@ export default function Home() {
                 <li>Multi-organization ready (memberships)</li>
               </ul>
               <div className="mt-4 rounded-lg bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
-                Example: https://sdac.org/s/parks → your long URL
+                Example: https://sdak.org/s/parks → your long URL
               </div>
               <div className="mt-4 text-xs text-zinc-500">
                 Already have access?{" "}
-                <a className="underline" href="/login">
+                <Link className="underline" href="/login">
                   Sign in
-                </a>
+                </Link>
                 .
               </div>
             </div>

@@ -83,11 +83,7 @@ export default async function LeadsPage() {
                       <div className="font-medium">{l.name || "—"}</div>
                       <div className="text-xs text-zinc-500">{l.email || ""}</div>
                       <div className="text-[11px] text-zinc-400">
-<<<<<<< HEAD
                         {l.utmSource || l.utmMedium || l.utmCampaign
-=======
-                        {(l.utmSource || l.utmMedium || l.utmCampaign)
->>>>>>> 4851548 (Add marketing pages, leads, and pricing)
                           ? `${l.utmSource || "—"} / ${l.utmMedium || "—"} / ${l.utmCampaign || "—"}`
                           : ""}
                       </div>

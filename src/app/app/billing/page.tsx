@@ -7,7 +7,11 @@ import BillingButtons from "@/app/app/billing/billing-buttons";
 
 export const dynamic = "force-dynamic";
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await getServerSession(authOptions);
   const userId = session?.user ? (session.user as { id?: string }).id : null;
   if (!userId) return null;
@@ -19,6 +23,8 @@ export default async function BillingPage() {
   const linkCount = await prisma.link.count({
     where: { orgId, archivedAt: null },
   });
+  const sp = searchParams ? await searchParams : undefined;
+  const startCheckout = sp?.startCheckout === "1";
 
   return (
     <div className="flex flex-col gap-8">
@@ -54,6 +60,7 @@ export default async function BillingPage() {
             <BillingButtons
               isPaid={billing.isPaid}
               hasCustomer={Boolean(billing.stripeCustomerId)}
+              autoStartCheckout={startCheckout}
             />
           </div>
         </div>

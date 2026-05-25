@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { getUserPrimaryOrgId } from "@/lib/org";
@@ -22,19 +23,19 @@ export default async function AppLayout({
       <header className="border-b border-zinc-200 bg-white">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <a className="text-sm font-semibold tracking-tight" href="/">
+            <Link className="text-sm font-semibold tracking-tight" href="/">
               SDAC
-            </a>
+            </Link>
             <nav className="ml-2 hidden items-center gap-3 text-sm text-zinc-600 sm:flex">
-              <a className="hover:underline" href="/app">
+              <Link className="hover:underline" href="/app">
                 Links
-              </a>
-              <a className="hover:underline" href="/app/billing">
+              </Link>
+              <Link className="hover:underline" href="/app/billing">
                 Billing
-              </a>
-              <a className="hover:underline" href="/app/leads">
+              </Link>
+              <Link className="hover:underline" href="/app/leads">
                 Leads
-              </a>
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">

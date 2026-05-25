@@ -1,5 +1,6 @@
 import PricingCalculator from "@/app/pricing/pricing-calculator";
 import { quoteAnnual } from "@/lib/pricing";
+import Link from "next/link";
 
 function formatUsd(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -16,19 +17,19 @@ export default function PricingPage() {
     <div className="min-h-dvh bg-zinc-50 text-zinc-900">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-16">
         <header className="flex items-center justify-between">
-          <a className="text-sm font-semibold tracking-tight" href="/">
+          <Link className="text-sm font-semibold tracking-tight" href="/">
             SDAC
-          </a>
+          </Link>
           <div className="flex items-center gap-3">
-            <a className="text-sm underline" href="/demo">
+            <Link className="text-sm underline" href="/demo">
               Request a demo
-            </a>
-            <a
+            </Link>
+            <Link
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
               href="/login"
             >
               Sign in
-            </a>
+            </Link>
           </div>
         </header>
 
@@ -65,10 +66,13 @@ export default function PricingPage() {
                 <li>Multiple staff logins (roles)</li>
                 <li>Human support and onboarding</li>
               </ul>
-              <div className="mt-4 text-sm">
-                <a className="underline" href="/demo">
-                  Request a demo →
-                </a>
+              <div className="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-3">
+                <Link className="underline" href="/signup">
+                  Get started →
+                </Link>
+                <Link className="text-zinc-600 underline" href="/demo">
+                  Or request a demo
+                </Link>
               </div>
             </div>
           </div>

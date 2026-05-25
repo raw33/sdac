@@ -2,11 +2,27 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
+import { getOrgBillingStatus } from "@/lib/billing";
 import CreateLinkForm from "@/app/app/create-link-form";
+
+type AppData = {
+  orgId: string | null;
+  billing: { isPaid: boolean };
+  links: Array<{
+    id: string;
+    code: string;
+    title: string | null;
+    destinationUrl: string;
+    createdAt: Date;
+    _count: { clicks: number };
+  }>;
+};
 
 async function getData(userId: string) {
   const orgId = await getUserPrimaryOrgId(userId);
-  if (!orgId) return { orgId: null, links: [] as never[] };
+  if (!orgId) return { orgId: null, links: [], billing: { isPaid: false } } satisfies AppData;
+
+  const billing = await getOrgBillingStatus(orgId);
 
   const links = await prisma.link.findMany({
     where: { orgId, archivedAt: null },
@@ -22,7 +38,7 @@ async function getData(userId: string) {
     take: 50,
   });
 
-  return { orgId, links };
+  return { orgId, links, billing: { isPaid: billing.isPaid } } satisfies AppData;
 }
 
 export default async function AppHome() {
@@ -30,7 +46,7 @@ export default async function AppHome() {
   const userId = session?.user ? (session.user as { id?: string }).id : null;
   if (!userId) return null;
 
-  const { links } = await getData(userId);
+  const { links, billing } = await getData(userId);
 
   return (
     <div className="flex flex-col gap-8">
@@ -39,6 +55,11 @@ export default async function AppHome() {
         <p className="text-sm text-zinc-600">
           Create branded short URLs and download QR codes.
         </p>
+        {!billing.isPaid ? (
+          <div className="text-xs text-zinc-500">
+            You’re on the free trial. Upgrade to unlock click analytics and unlimited links.
+          </div>
+        ) : null}
       </div>
 
       <CreateLinkForm
@@ -79,7 +100,9 @@ export default async function AppHome() {
                         {l.destinationUrl}
                       </div>
                     </td>
-                    <td className="px-6 py-4">{l._count.clicks}</td>
+                    <td className="px-6 py-4">
+                      {billing.isPaid ? l._count.clicks : "—"}
+                    </td>
                     <td className="px-6 py-4">
                       <a
                         className="mr-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium hover:bg-zinc-50"

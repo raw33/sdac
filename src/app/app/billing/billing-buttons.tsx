@@ -1,28 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function BillingButtons({
   isPaid,
   hasCustomer,
+  autoStartCheckout,
 }: {
   isPaid: boolean;
   hasCustomer: boolean;
+  autoStartCheckout?: boolean;
 }) {
   const [loading, setLoading] = useState<null | "checkout" | "portal">(null);
   const [error, setError] = useState<string | null>(null);
+  const upgradeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const autoStartedRef = useRef(false);
 
   async function go(path: string, kind: "checkout" | "portal") {
     setLoading(kind);
     setError(null);
     const res = await fetch(path, { method: "POST" });
-<<<<<<< HEAD
-    const json = (await res.json().catch(() => null)) as
-      | { url?: string; error?: string }
-      | null;
-=======
     const json = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
->>>>>>> 97af2fe (Add billing subscriptions and onboarding)
     if (!res.ok || !json?.url) {
       setError(json?.error || "Could not start billing.");
       setLoading(null);
@@ -30,6 +28,14 @@ export default function BillingButtons({
     }
     window.location.href = json.url;
   }
+
+  useEffect(() => {
+    if (!autoStartCheckout) return;
+    if (isPaid) return;
+    if (autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    upgradeButtonRef.current?.click();
+  }, [autoStartCheckout, isPaid]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -41,6 +47,7 @@ export default function BillingButtons({
       <div className="flex flex-wrap items-center gap-3">
         {!isPaid ? (
           <button
+            ref={upgradeButtonRef}
             className="h-11 rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
             disabled={loading !== null}
             onClick={() => void go("/api/billing/checkout", "checkout")}

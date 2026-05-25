@@ -1,8 +1,8 @@
-# sdac.org — Business critique + MVP scope
+# sdak.org — Business critique + MVP scope
 
 ## The strong parts (keep)
 - **Clear buyer persona**: city administrator / clerk, chamber director, EDO staff want something “done for them”.
-- **Branded trust**: `*.sdac.org` reads like civic infrastructure (less “random SaaS”).
+- **Branded trust**: `*.sdak.org` reads like civic infrastructure (less “random SaaS”).
 - **Low-friction value**: printed materials, social posts, and meeting packets always need shorter links + QR.
 - **Repeatable product**: same feature set across org types; minimal customization.
 
@@ -28,4 +28,3 @@
 - One flagship pilot (Aberdeen chamber/EDO or a nearby smaller city) → **case study** + testimonial.
 - Show up where buyers already are (SDML conference, chamber/EDO events).
 - Convert from “QR generator” to “campaign + reporting” (what boards actually care about).
-

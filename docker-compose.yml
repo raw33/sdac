@@ -4,12 +4,11 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: sdac
+      POSTGRES_DB: sdak
     ports:
       - "5432:5432"
     volumes:
-      - sdac_pg:/var/lib/postgresql/data
+      - sdak_pg:/var/lib/postgresql/data
 
 volumes:
-  sdac_pg:
-
+  sdak_pg:
