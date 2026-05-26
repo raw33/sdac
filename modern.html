@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern Edition (2026) — Aberdeen Questers Coloring Book</title>
+    <base href="./" />
+    <link rel="stylesheet" href="../modern.css" />
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/icons/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="../assets/icons/site.webmanifest" />
+  </head>
+  <body>
+    <div id="transitionOverlay" class="transition-overlay" aria-hidden="true"></div>
+
+    <header class="top" aria-label="Modern header">
+      <div class="top-inner">
+        <div class="logo">
+          <span class="logo-badge">MODERN • 2026</span>
+          <a class="logo-link" href="/" aria-label="Aberdeen Questers home">
+            <span class="logo-title">Aberdeen Questers</span>
+            <span class="logo-sub">1944–2023</span>
+          </a>
+        </div>
+        <nav class="links" aria-label="Modern navigation">
+          <div class="links-row" aria-label="Primary navigation">
+            <a class="pill pill-primary pill-retro" href="/" id="backLink">Back to classic</a>
+          </div>
+          <div class="links-sub" aria-label="PDF links">
+            <a class="pill" href="../assets/book.pdf" target="_blank" rel="noopener noreferrer">Original book (PDF)</a>
+            <a class="pill" href="../assets/modern/book.pdf" target="_blank" rel="noopener noreferrer">Modern book (PDF)</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <section class="grid" aria-label="Modern viewer grid">
+        <div class="panel" aria-label="Modern flipbook panel">
+          <div class="panel-header">
+            <div class="toolbar" role="toolbar" aria-label="Modern controls">
+              <button id="prevBtn" class="btn" type="button" aria-label="Previous page">◀ Prev</button>
+              <button id="nextBtn" class="btn" type="button" aria-label="Next page">Next ▶</button>
+              <span style="opacity: 0.6;">|</span>
+              <label
+                for="pageInput"
+                style="display:flex;align-items:center;gap:8px;font-weight:900;color:rgba(255,255,255,0.82);"
+              >
+                Page
+                <input id="pageInput" class="page-input" type="number" min="1" step="1" inputmode="numeric" />
+                <span id="pageTotal" style="opacity:0.7;font-weight:850;"></span>
+              </label>
+              <button id="goBtn" class="btn" type="button">Go</button>
+              <span style="flex:1 1 auto;"></span>
+              <button id="gridBtn" class="btn" type="button">All pages</button>
+              <button id="openPageBtn" class="btn" type="button">Open page to color</button>
+            </div>
+          </div>
+          <div class="book-wrap">
+            <div class="book-frame">
+              <div class="book-glow" aria-hidden="true"></div>
+              <div id="book" class="book" aria-label="Modern flipbook"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <dialog id="gridDialog" class="dialog">
+      <div class="dialog-header">
+        <div class="dialog-title">Modern gallery</div>
+        <button id="closeGridBtn" class="btn" type="button">Close</button>
+      </div>
+      <div id="grid" class="thumbs" aria-label="Modern page thumbnails"></div>
+    </dialog>
+
+    <dialog id="pageDialog" class="dialog page-dialog">
+      <div class="dialog-header">
+        <div class="color-nav" aria-label="Coloring page navigation">
+          <button id="colorPrevBtn" class="btn" type="button" aria-label="Previous page">◀</button>
+          <select id="colorPageSelect" class="page-select" aria-label="Choose a page to color"></select>
+          <button id="colorNextBtn" class="btn" type="button" aria-label="Next page">▶</button>
+        </div>
+        <div id="pageDialogTitle" class="dialog-title" style="margin-left: 10px;"></div>
+        <div class="dialog-actions">
+          <button id="undoBtn" class="btn" type="button">Undo</button>
+          <button id="clearBtn" class="btn" type="button">Clear</button>
+          <button id="printBtn" class="btn" type="button">Print</button>
+          <button id="downloadBtn" class="btn" type="button">Download</button>
+          <button id="closePageBtn" class="btn" type="button">Close</button>
+        </div>
+      </div>
+      <div class="color-wrap" aria-label="Coloring canvas">
+        <div class="color-tools" role="toolbar" aria-label="Color tools">
+          <div>
+            <div class="tool-label">Color</div>
+            <div class="swatches" id="swatches" aria-label="Color swatches"></div>
+          </div>
+          <div>
+            <label class="tool-label" for="brushSize">Brush</label>
+            <input id="brushSize" type="range" min="2" max="48" value="10" />
+          </div>
+          <div>
+            <label class="tool-label" for="brushOpacity">Opacity</label>
+            <input id="brushOpacity" type="range" min="0.05" max="1" step="0.05" value="1" />
+          </div>
+          <div>
+            <button id="eraserBtn" class="btn" type="button" aria-pressed="false">Eraser</button>
+          </div>
+          <div class="tool-muted" id="pageTip">Drag to draw. Two-finger scroll still works.</div>
+          <div class="tool-muted" id="unsavedMsg" aria-live="polite"></div>
+          <div class="tool-muted" id="exportMsg" aria-live="polite"></div>
+        </div>
+        <div class="canvas-stage">
+          <canvas id="colorCanvas"></canvas>
+        </div>
+      </div>
+    </dialog>
+
+    <footer class="site-footer" aria-label="Site footer">
+      Website hosting provided by
+      <a href="https://consulting.richward.org" target="_blank" rel="noopener noreferrer">RAW Consulting</a>
+      as a community service effort.
+    </footer>
+
+    <script src="https://unpkg.com/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+    <script>
+      (function () {
+        const pages = [
+          {
+            title: "Front cover",
+            src: "../assets/modern/cover-front.png",
+          },
+          {
+            title: "Foreword",
+            src: "../assets/modern/foreword.png",
+          },
+          {
+            title: "Quote",
+            src: "../assets/modern/quote-longfellow.png",
+          },
+          {
+            "title": "Longfellow House",
+            "src": "../assets/modern/pages/longfellow-house.png"
+          },
+          {
+            "title": "1882 Presbyterian Church",
+            "src": "../assets/modern/pages/1882-presbyterian-church.png"
+          },
+          {
+            "title": "1888 Easton-Lamont House",
+            "src": "../assets/modern/pages/1888-easton-lamont-house.png"
+          },
+          {
+            "title": "1904 Queen Anne Home",
+            "src": "../assets/modern/pages/1904-queen-anne-home.png"
+          },
+          {
+            "title": "1927 Presbyterian Church",
+            "src": "../assets/modern/pages/1927-presbyterian-church.png"
+          },
+          {
+            "title": "Aldrich Park View Church",
+            "src": "../assets/modern/pages/aldrich-park-view-church.png"
+          },
+          {
+            "title": "Aldrich Park",
+            "src": "../assets/modern/pages/aldrich-park.png"
+          },
+          {
+            "title": "Alonzo Ward Hotel",
+            "src": "../assets/modern/pages/alonzo-ward-hotel.png"
+          },
+          {
+            "title": "B nai Isaac Synagogue",
+            "src": "../assets/modern/pages/b-nai-isaac-synagogue.png"
+          },
+          {
+            "title": "Brown County Clock Tower",
+            "src": "../assets/modern/pages/brown-county-clock-tower.png"
+          },
+          {
+            "title": "Brown County Courthouse",
+            "src": "../assets/modern/pages/brown-county-courthouse.png"
+          },
+          {
+            "title": "Caboose",
+            "src": "../assets/modern/pages/caboose.png"
+          },
+          {
+            "title": "Capitol Theater",
+            "src": "../assets/modern/pages/capitol-theater.png"
+          },
+          {
+            "title": "Dacotah Prairie Museum",
+            "src": "../assets/modern/pages/dacotah-prairie-museum.png"
+          },
+          {
+            "title": "Dome of Aldersgate Church (former First United Methodist)",
+            "src": "../assets/modern/pages/dome-of-aldersgate-church-former-first-united-methodist.png"
+          },
+          {
+            "title": "Easton Castle",
+            "src": "../assets/modern/pages/easton-castle.png"
+          },
+          {
+            "title": "Fire Station #2",
+            "src": "./assets/modern/pages/fire-station-2.png"
+          },
+          {
+            "title": "Gambrell Shingle Style House 1905",
+            "src": "./assets/modern/pages/gambrell-shingle-style-house-1905.png"
+          },
+          {
+            "title": "Gingerbread House",
+            "src": "./assets/modern/pages/gingerbread-house.png"
+          },
+          {
+            "title": "Granite Tudor Style House",
+            "src": "./assets/modern/pages/granite-tudor-style-house.png"
+          },
+          {
+            "title": "Great Northern Railway Depot",
+            "src": "./assets/modern/pages/great-northern-railway-depot.png"
+          },
+          {
+            "title": "L Frank Baum House",
+            "src": "./assets/modern/pages/l-frank-baum-house.png"
+          },
+          {
+            "title": "Masonic Temple",
+            "src": "./assets/modern/pages/masonic-temple.png"
+          },
+          {
+            "title": "Melgaard Park",
+            "src": "./assets/modern/pages/melgaard-park.png"
+          },
+          {
+            "title": "Milwaukee Railroad Depot",
+            "src": "./assets/modern/pages/milwaukee-railroad-depot.png"
+          },
+          {
+            "title": "Northern State University",
+            "src": "./assets/modern/pages/northern-state-university.png"
+          },
+          {
+            "title": "Old Central High School",
+            "src": "./assets/modern/pages/old-central-high-school.png"
+          },
+          {
+            "title": "Queen Anne Style House",
+            "src": "./assets/modern/pages/queen-anne-style-house.png"
+          },
+          {
+            "title": "Saint Mary s Catholic Church",
+            "src": "./assets/modern/pages/saint-mary-s-catholic-church.png"
+          },
+          {
+            "title": "Simmons House",
+            "src": "./assets/modern/pages/simmons-house.png"
+          },
+          {
+            "title": "Summers in Aberdeen",
+            "src": "./assets/modern/pages/summers-in-aberdeen.png"
+          },
+          {
+            "title": "Tower",
+            "src": "./assets/modern/pages/tower.png"
+          },
+          {
+            "title": "Tudor Style House",
+            "src": "./assets/modern/pages/tudor-style-house.png"
+          },
+          {
+            "title": "Werth Farm House",
+            "src": "./assets/modern/pages/werth-farm-house.png"
+          },
+          {
+            "title": "Back cover",
+            "src": "./assets/modern/cover-back.png"
+          }
+        ];
+
+        const overlay = document.getElementById("transitionOverlay");
+        const backLink = document.getElementById("backLink");
+        backLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          overlay.classList.add("show");
+          const prefersReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+          window.setTimeout(() => (window.location.href = backLink.getAttribute("href")), prefersReduced ? 0 : 360);
+        });
+
+        const bookEl = document.getElementById("book");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const gridBtn = document.getElementById("gridBtn");
+        const pageInput = document.getElementById("pageInput");
+        const pageTotal = document.getElementById("pageTotal");
+        const goBtn = document.getElementById("goBtn");
+        const openPageBtn = document.getElementById("openPageBtn");
+
+        const gridDialog = document.getElementById("gridDialog");
+        const gridEl = document.getElementById("grid");
+        const closeGridBtn = document.getElementById("closeGridBtn");
+
+        const pageDialog = document.getElementById("pageDialog");
+        const pageDialogTitle = document.getElementById("pageDialogTitle");
+        const downloadBtn = document.getElementById("downloadBtn");
+        const closePageBtn = document.getElementById("closePageBtn");
+        const undoBtn = document.getElementById("undoBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const printBtn = document.getElementById("printBtn");
+        const swatchesEl = document.getElementById("swatches");
+        const brushSizeEl = document.getElementById("brushSize");
+        const brushOpacityEl = document.getElementById("brushOpacity");
+        const eraserBtn = document.getElementById("eraserBtn");
+        const colorCanvas = document.getElementById("colorCanvas");
+        const canvasStage = document.querySelector(".canvas-stage");
+        const exportMsgEl = document.getElementById("exportMsg");
+        const unsavedMsgEl = document.getElementById("unsavedMsg");
+        const colorPrevBtn = document.getElementById("colorPrevBtn");
+        const colorNextBtn = document.getElementById("colorNextBtn");
+        const colorPageSelect = document.getElementById("colorPageSelect");
+
+        pageTotal.textContent = `/ ${pages.length}`;
+        pageInput.value = "1";
+        pageInput.max = String(pages.length);
+
+        function clamp(n, min, max) {
+          return Math.min(max, Math.max(min, n));
+        }
+
+        function setExportMessage(message) {
+          if (!exportMsgEl) return;
+          exportMsgEl.textContent = message || "";
+        }
+
+        function svgDataUrl(svg) {
+          return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        }
+
+        function missingImagePlaceholder(title, hint) {
+          const safeTitle = String(title || "Missing image");
+          const safeHint = String(hint || "");
+          return svgDataUrl(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200">
+              <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#7c5cff" stop-opacity="0.22"/>
+                  <stop offset="1" stop-color="#2de2e6" stop-opacity="0.12"/>
+                </linearGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="#0b0f1f"/>
+              <rect x="36" y="36" width="828" height="1128" rx="26" fill="url(#g)" stroke="rgba(255,255,255,0.16)"/>
+              <text x="50%" y="44%" text-anchor="middle" fill="rgba(255,255,255,0.92)" font-family="system-ui" font-size="40" font-weight="900">${safeTitle}</text>
+              <text x="50%" y="50%" text-anchor="middle" fill="rgba(255,255,255,0.72)" font-family="system-ui" font-size="18" font-weight="700">${safeHint}</text>
+              <text x="50%" y="58%" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14">assets/modern/cover-back.png</text>
+            </svg>`
+          );
+        }
+
+        let isDirty = false;
+        let lastSelectValue = "0";
+
+        function setUnsavedMessage() {
+          if (!unsavedMsgEl) return;
+          unsavedMsgEl.textContent = isDirty
+            ? "Edits on this page are not saved. Download or Print before switching pages."
+            : "Edits are not saved automatically (use Download or Print to keep a copy).";
+        }
+
+        function markDirty() {
+          isDirty = true;
+          setUnsavedMessage();
+        }
+
+        function buildColorPageSelect() {
+          if (!colorPageSelect) return;
+          const frag = document.createDocumentFragment();
+          pages.forEach((p, i) => {
+            const opt = document.createElement("option");
+            opt.value = String(i);
+            opt.textContent = p.title;
+            frag.appendChild(opt);
+          });
+          colorPageSelect.replaceChildren(frag);
+        }
+
+        function buildBookPages() {
+          const fragment = document.createDocumentFragment();
+          pages.forEach((page, index) => {
+            const pageDiv = document.createElement("div");
+            pageDiv.className = "page";
+            pageDiv.dataset.pageIndex = String(index);
+            const img = document.createElement("img");
+            img.loading = "lazy";
+            img.src = page.src;
+            img.alt = page.title;
+            img.onerror = () => {
+              const isBackCover = String(page.title || "").toLowerCase().includes("back cover");
+              img.src = missingImagePlaceholder(
+                isBackCover ? "Back cover missing" : "Image missing",
+                isBackCover ? "Add the back cover file to continue" : "File not found"
+              );
+            };
+            pageDiv.appendChild(img);
+            fragment.appendChild(pageDiv);
+          });
+          bookEl.replaceChildren(fragment);
+        }
+
+        function buildGrid() {
+          const fragment = document.createDocumentFragment();
+          pages.forEach((page, index) => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "thumb";
+            item.addEventListener("click", () => {
+              goToPage(index);
+              gridDialog.close();
+            });
+            const img = document.createElement("img");
+            img.loading = "lazy";
+            img.src = page.src;
+            img.alt = page.title;
+            img.onerror = () => {
+              const isBackCover = String(page.title || "").toLowerCase().includes("back cover");
+              img.src = missingImagePlaceholder(
+                isBackCover ? "Back cover missing" : "Image missing",
+                "Add the file and refresh"
+              );
+            };
+            const label = document.createElement("div");
+            label.className = "thumb-label";
+            label.textContent = page.title;
+            item.appendChild(img);
+            item.appendChild(label);
+            fragment.appendChild(item);
+          });
+          gridEl.replaceChildren(fragment);
+        }
+
+        const COLORS = [
+          "#111111",
+          "#ffffff",
+          "#d32f2f",
+          "#f57c00",
+          "#fbc02d",
+          "#388e3c",
+          "#1976d2",
+          "#7b1fa2",
+          "#2de2e6",
+        ];
+
+        let activeColor = COLORS[0];
+        let isEraser = false;
+        let isDrawing = false;
+        let lastPoint = null;
+        let baseImage = null;
+        let currentPageIndex = 0;
+        let undoStack = [];
+        let ctx = null;
+        let lastFilename = "colored-page.png";
+
+        function hexToRgba(hex, alpha) {
+          const normalized = String(hex || "").replace("#", "");
+          if (normalized.length !== 6) return `rgba(0,0,0,${alpha})`;
+          const r = Number.parseInt(normalized.slice(0, 2), 16);
+          const g = Number.parseInt(normalized.slice(2, 4), 16);
+          const b = Number.parseInt(normalized.slice(4, 6), 16);
+          return `rgba(${r},${g},${b},${alpha})`;
+        }
+
+        function makeSwatches() {
+          const frag = document.createDocumentFragment();
+          COLORS.forEach((c) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "swatch";
+            b.style.background = c === "#ffffff" ? "linear-gradient(135deg,#fff,#eaeaea)" : c;
+            b.setAttribute("aria-label", `Color ${c}`);
+            b.addEventListener("click", () => {
+              activeColor = c;
+              isEraser = false;
+              eraserBtn.setAttribute("aria-pressed", "false");
+              eraserBtn.textContent = "Eraser";
+              document.querySelectorAll(".swatch").forEach((el) => el.classList.remove("swatch-active"));
+              b.classList.add("swatch-active");
+            });
+            frag.appendChild(b);
+          });
+          swatchesEl.replaceChildren(frag);
+          swatchesEl.querySelector(".swatch")?.classList.add("swatch-active");
+        }
+
+        function redrawBase() {
+          if (!ctx || !baseImage) return;
+          ctx.globalCompositeOperation = "source-over";
+          ctx.clearRect(0, 0, colorCanvas.width, colorCanvas.height);
+          ctx.drawImage(baseImage, 0, 0, colorCanvas.width, colorCanvas.height);
+        }
+
+        function pushUndo() {
+          if (!ctx) return;
+          try {
+            const snap = ctx.getImageData(0, 0, colorCanvas.width, colorCanvas.height);
+            undoStack.push(snap);
+            if (undoStack.length > 25) undoStack.shift();
+            undoBtn.disabled = undoStack.length <= 1;
+          } catch {
+            undoBtn.disabled = true;
+          }
+        }
+
+        function undo() {
+          if (!ctx || undoStack.length <= 1) return;
+          undoStack.pop();
+          const prev = undoStack[undoStack.length - 1];
+          ctx.putImageData(prev, 0, 0);
+          undoBtn.disabled = undoStack.length <= 1;
+        }
+
+        function clearToBase() {
+          redrawBase();
+          undoStack = [];
+          pushUndo();
+          markDirty();
+        }
+
+        function fitCanvasToStage() {
+          if (!canvasStage) return;
+          const viewportH = window.visualViewport?.height || window.innerHeight;
+          const maxW = Math.max(1, canvasStage.clientWidth - 20);
+          let maxH = Math.max(1, canvasStage.clientHeight - 20);
+          if (maxH < 120) {
+            const rect = canvasStage.getBoundingClientRect();
+            maxH = Math.max(180, Math.floor(viewportH - rect.top - 16));
+          }
+          const scale = Math.min(maxW / colorCanvas.width, maxH / colorCanvas.height, 1);
+          colorCanvas.style.width = `${Math.floor(colorCanvas.width * scale)}px`;
+          colorCanvas.style.height = `${Math.floor(colorCanvas.height * scale)}px`;
+        }
+
+        function setCanvasToImage(img) {
+          baseImage = img;
+          colorCanvas.width = img.naturalWidth;
+          colorCanvas.height = img.naturalHeight;
+          ctx = colorCanvas.getContext("2d", { willReadFrequently: true });
+          ctx.imageSmoothingEnabled = true;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          redrawBase();
+          undoStack = [];
+          pushUndo();
+          fitCanvasToStage();
+          requestAnimationFrame(fitCanvasToStage);
+          setExportMessage("");
+          setUnsavedMessage();
+
+          try {
+            colorCanvas.toDataURL("image/png");
+            downloadBtn.disabled = false;
+            printBtn.disabled = false;
+            setExportMessage("Download saves a PNG. Print lets you print or save as PDF.");
+          } catch {
+            downloadBtn.disabled = true;
+            printBtn.disabled = true;
+            setExportMessage(
+              "Download/Print are blocked when opened as a local file. Open this page from a local server (http://localhost) to enable exporting."
+            );
+          }
+        }
+
+        function rotateCanvas(direction) {
+          if (!ctx) return;
+          const current = colorCanvas;
+          const src = document.createElement("canvas");
+          src.width = current.width;
+          src.height = current.height;
+          const sctx = src.getContext("2d");
+          sctx.drawImage(current, 0, 0);
+
+          const clockwise = direction > 0;
+          const newW = src.height;
+          const newH = src.width;
+          current.width = newW;
+          current.height = newH;
+          ctx = current.getContext("2d", { willReadFrequently: true });
+          ctx.imageSmoothingEnabled = true;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+
+          ctx.save();
+          if (clockwise) {
+            ctx.translate(newW, 0);
+            ctx.rotate(Math.PI / 2);
+          } else {
+            ctx.translate(0, newH);
+            ctx.rotate(-Math.PI / 2);
+          }
+          ctx.drawImage(src, 0, 0);
+          ctx.restore();
+
+          fitCanvasToStage();
+          requestAnimationFrame(fitCanvasToStage);
+          pushUndo();
+          markDirty();
+
+          try {
+            colorCanvas.toDataURL("image/png");
+            downloadBtn.disabled = false;
+            printBtn.disabled = false;
+          } catch {
+            downloadBtn.disabled = true;
+            printBtn.disabled = true;
+            setExportMessage(
+              "Download/Print are blocked when opened as a local file. Open this page from a local server (e.g., http://localhost) to enable exporting."
+            );
+          }
+        }
+
+        function getCanvasPoint(event) {
+          const rect = colorCanvas.getBoundingClientRect();
+          const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+          const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+          const x = ((clientX - rect.left) / rect.width) * colorCanvas.width;
+          const y = ((clientY - rect.top) / rect.height) * colorCanvas.height;
+          return { x, y };
+        }
+
+        function drawLine(from, to) {
+          if (!ctx) return;
+          const size = Number.parseInt(brushSizeEl.value, 10) || 10;
+          const opacity = Number.parseFloat(brushOpacityEl.value) || 1;
+          ctx.lineWidth = size;
+          if (isEraser) {
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.strokeStyle = "rgba(0,0,0,1)";
+          } else {
+            ctx.globalCompositeOperation = "source-over";
+            ctx.strokeStyle = hexToRgba(activeColor, Math.min(1, Math.max(0.05, opacity)));
+          }
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.stroke();
+        }
+
+        function startDraw(event) {
+          if (event.touches && event.touches.length > 1) return;
+          isDrawing = true;
+          lastPoint = getCanvasPoint(event);
+        }
+
+        function moveDraw(event) {
+          if (!isDrawing) return;
+          if (event.touches && event.touches.length > 1) return;
+          event.preventDefault();
+          const p = getCanvasPoint(event);
+          drawLine(lastPoint, p);
+          lastPoint = p;
+        }
+
+        function endDraw() {
+          if (!isDrawing) return;
+          isDrawing = false;
+          lastPoint = null;
+          pushUndo();
+          markDirty();
+        }
+
+        function closeDialogOnBackdropClick(dialog) {
+          dialog.addEventListener("click", (event) => {
+            const rect = dialog.getBoundingClientRect();
+            const inDialog =
+              rect.top <= event.clientY &&
+              event.clientY <= rect.top + rect.height &&
+              rect.left <= event.clientX &&
+              event.clientX <= rect.left + rect.width;
+            if (!inDialog) dialog.close();
+          });
+        }
+
+        function loadColorPage(index) {
+          currentPageIndex = index;
+          const page = pages[index];
+          isDirty = false;
+          setUnsavedMessage();
+          setExportMessage("");
+
+          if (colorPageSelect) {
+            colorPageSelect.value = String(index);
+            lastSelectValue = colorPageSelect.value;
+          }
+
+          pageDialogTitle.textContent = `${page.title} — color & download`;
+          const img = new Image();
+          img.onload = () => setCanvasToImage(img);
+          img.onerror = () => setExportMessage("Couldn’t load this page image. Try reloading the page.");
+          setExportMessage("Loading page…");
+          img.src = page.src;
+
+          lastFilename = `${page.title} (colored).png`;
+          downloadBtn.disabled = true;
+          printBtn.disabled = true;
+        }
+
+        function maybeNavigateColorPage(nextIndex) {
+          const safeNext = clamp(nextIndex, 0, pages.length - 1);
+          if (safeNext === currentPageIndex) return;
+          if (isDirty) {
+            const ok = window.confirm(
+              "Your coloring on this page isn’t saved.\n\nTip: click Download or Print to keep a copy.\n\nSwitch pages anyway?"
+            );
+            if (!ok) {
+              if (colorPageSelect) colorPageSelect.value = lastSelectValue;
+              return;
+            }
+          }
+          loadColorPage(safeNext);
+        }
+
+        function openColorDialog(index) {
+          if (!pageDialog.open) pageDialog.showModal();
+          loadColorPage(clamp(index, 0, pages.length - 1));
+        }
+
+        let pageFlip = null;
+        let fallbackIndex = 0;
+
+        function initFallbackViewer() {
+          bookEl.replaceChildren();
+          const img = document.createElement("img");
+          img.src = pages[0].src;
+          img.alt = pages[0].title;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "contain";
+          img.style.display = "block";
+          img.style.cursor = "grab";
+          bookEl.appendChild(img);
+
+          function render() {
+            const page = pages[fallbackIndex];
+            img.src = page.src;
+            img.alt = page.title;
+            pageInput.value = String(fallbackIndex + 1);
+            pageInput.setAttribute("aria-label", `Page ${fallbackIndex + 1} of ${pages.length}`);
+          }
+
+          function goTo(index) {
+            fallbackIndex = clamp(index, 0, pages.length - 1);
+            render();
+          }
+
+          prevBtn.addEventListener("click", () => goTo(fallbackIndex - 1));
+          nextBtn.addEventListener("click", () => goTo(fallbackIndex + 1));
+          openPageBtn.addEventListener("click", () => openColorDialog(fallbackIndex));
+
+          goBtn.addEventListener("click", () => {
+            const raw = String(pageInput.value || "").trim();
+            const numeric = Number.parseInt(raw, 10);
+            if (!Number.isFinite(numeric)) return;
+            goTo(numeric - 1);
+          });
+
+          render();
+        }
+
+        function initFlipbook() {
+          if (!window.St) return false;
+          const parent = bookEl.parentElement;
+          // Single-page viewing (one page at a time), even on desktop.
+          const availableW = parent ? Math.max(320, parent.clientWidth - 28) : 560;
+          const availableH = Math.max(520, Math.floor(window.innerHeight * 0.78));
+          const w = Math.min(560, availableW);
+          const h = Math.min(720, availableH);
+
+          pageFlip = new St.PageFlip(bookEl, {
+            width: Math.floor(w),
+            height: Math.floor(h),
+            size: "stretch",
+            minWidth: 320,
+            maxWidth: 560,
+            minHeight: 520,
+            maxHeight: 720,
+            maxShadowOpacity: 0.35,
+            showCover: false,
+            useMouseEvents: true,
+            usePortrait: true,
+            mobileScrollSupport: true,
+            swipeDistance: 20,
+            clickEventForward: false,
+          });
+          pageFlip.loadFromHTML(document.querySelectorAll(".page"));
+          // Force the viewer to start at the very first page (the front cover).
+          try {
+            pageFlip.turnToPage(0);
+          } catch {
+            // ignore
+          }
+          return true;
+        }
+
+        function updateInputFromState() {
+          if (!pageFlip) return;
+          const idx = pageFlip.getCurrentPageIndex();
+          pageInput.value = String(idx + 1);
+          pageInput.setAttribute("aria-label", `Page ${idx + 1} of ${pages.length}`);
+        }
+
+        function goToPage(index) {
+          const safeIndex = clamp(index, 0, pages.length - 1);
+          if (pageFlip) {
+            pageFlip.turnToPage(safeIndex);
+            pageInput.value = String(safeIndex + 1);
+          } else {
+            fallbackIndex = safeIndex;
+          }
+        }
+
+        function getCurrentIndex() {
+          if (pageFlip) return pageFlip.getCurrentPageIndex();
+          return fallbackIndex;
+        }
+
+        function openCurrentPage() {
+          openColorDialog(getCurrentIndex());
+        }
+
+        buildBookPages();
+        buildGrid();
+        buildColorPageSelect();
+        makeSwatches();
+
+        closeDialogOnBackdropClick(gridDialog);
+        closeDialogOnBackdropClick(pageDialog);
+        closeGridBtn.addEventListener("click", () => gridDialog.close());
+        closePageBtn.addEventListener("click", () => pageDialog.close());
+        gridBtn.addEventListener("click", () => gridDialog.showModal());
+        openPageBtn.addEventListener("click", openCurrentPage);
+        window.addEventListener("resize", () => fitCanvasToStage());
+
+        // Drawing events
+        colorCanvas.addEventListener("mousedown", startDraw);
+        colorCanvas.addEventListener("mousemove", moveDraw);
+        window.addEventListener("mouseup", endDraw);
+        colorCanvas.addEventListener("touchstart", startDraw, { passive: true });
+        colorCanvas.addEventListener("touchmove", moveDraw, { passive: false });
+        colorCanvas.addEventListener("touchend", endDraw);
+
+        eraserBtn.addEventListener("click", () => {
+          isEraser = !isEraser;
+          eraserBtn.setAttribute("aria-pressed", isEraser ? "true" : "false");
+          eraserBtn.textContent = isEraser ? "Eraser (on)" : "Eraser";
+        });
+
+        undoBtn.addEventListener("click", undo);
+        clearBtn.addEventListener("click", clearToBase);
+        colorPrevBtn?.addEventListener("click", () => maybeNavigateColorPage(currentPageIndex - 1));
+        colorNextBtn?.addEventListener("click", () => maybeNavigateColorPage(currentPageIndex + 1));
+        colorPageSelect?.addEventListener("change", () => {
+          const n = Number.parseInt(String(colorPageSelect.value || "0"), 10);
+          if (!Number.isFinite(n)) return;
+          maybeNavigateColorPage(n);
+          lastSelectValue = colorPageSelect.value;
+        });
+
+        downloadBtn.addEventListener("click", () => {
+          if (!ctx) return;
+          let dataUrl = "";
+          try {
+            dataUrl = colorCanvas.toDataURL("image/png");
+          } catch {
+            downloadBtn.disabled = true;
+            printBtn.disabled = true;
+            setExportMessage(
+              "Download/Print are blocked when opened as a local file. Open this page from a local server (e.g., http://localhost) to enable exporting."
+            );
+            return;
+          }
+          const a = document.createElement("a");
+          a.href = dataUrl;
+          a.download = lastFilename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        });
+
+        printBtn.addEventListener("click", () => {
+          if (!ctx) return;
+          let dataUrl = "";
+          try {
+            dataUrl = colorCanvas.toDataURL("image/png");
+          } catch {
+            downloadBtn.disabled = true;
+            printBtn.disabled = true;
+            setExportMessage(
+              "Download/Print are blocked when opened as a local file. Open this page from a local server (e.g., http://localhost) to enable exporting."
+            );
+            return;
+          }
+          const w = window.open("", "_blank");
+          if (!w) {
+            setExportMessage("Pop-up blocked. Allow pop-ups for this site to print.");
+            return;
+          }
+          w.document.write(`<!doctype html>
+<html>
+  <head>
+    <title>Print</title>
+    <style>
+      body{margin:0;padding:20px;font-family:system-ui;background:#111;color:#eee}
+      img{max-width:100%;height:auto}
+    </style>
+  </head>
+  <body onload="window.focus(); window.print();">
+    <img src="${dataUrl}" alt="Colored page" />
+  </body>
+</html>`);
+          w.document.close();
+        });
+
+        try {
+          const ok = initFlipbook() || (() => new Promise((resolve) => requestAnimationFrame(() => resolve(initFlipbook()))))();
+          Promise.resolve(ok).then((resolvedOk) => {
+            if (resolvedOk) {
+              pageFlip.on("flip", updateInputFromState);
+              prevBtn.addEventListener("click", () => pageFlip?.flipPrev());
+              nextBtn.addEventListener("click", () => pageFlip?.flipNext());
+              goBtn.addEventListener("click", () => goToPage(Number.parseInt(pageInput.value, 10) - 1));
+              pageInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") goBtn.click();
+              });
+              updateInputFromState();
+            } else {
+              initFallbackViewer();
+            }
+          });
+        } catch (e) {
+          console.error(e);
+          initFallbackViewer();
+        }
+      })();
+    </script>
+  </body>
+</html>

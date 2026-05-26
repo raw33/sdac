@@ -1,55 +1,43 @@
-SDAK (sdak.org) is a multi-tenant short-link + QR + analytics MVP for civic orgs (municipalities, chambers, EDOs).
+# Aberdeen Questers Coloring Book (Flipbook)
 
-## What’s in the MVP
-- Password login (NextAuth credentials)
-- Create short codes → `/s/:code` redirects + records click events
-- Per-org link list with click counts
-- QR PNG download per link
+This is a small, static web page that presents the coloring book as an online “flipbook”, with:
+- Page-flip navigation (Prev/Next)
+- A page number jump box
+- An “All pages” thumbnail view to jump directly to any page
+- A per-page coloring mode (“Open page to color”)
+- A direct link to open the original PDF
 
-## Local setup
-### 1) Environment variables
-Create `.env` (or copy from `.env.example` if you add one) with:
-- `DATABASE_URL` (Postgres)
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL` (e.g. `http://localhost:3000` locally, your real URL in prod)
-- `IP_HASH_SALT` (recommended)
-- Optional: `PUBLIC_BASE_URL` (used for QR generation behind proxies)
-- Optional billing (Stripe): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`
-- Optional seed defaults: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ORG_NAME`, `ORG_SLUG`
+## Open it
 
-### 2) Generate Prisma client
-`npm run db:generate`
+You can open `index.html` directly (double-click) and it will work.
 
-### 3) Create and apply migrations
-This repo includes an initial migration under `prisma/migrations/`.
-- Dev: `npm run db:migrate`
-- Production: `npm run db:deploy`
+If you prefer, you can also run it from a simple local web server.
 
-### 4) Seed an admin + first org (optional, recommended)
-`npm run db:seed`
+Any simple local web server works. For example:
 
-### 5) Run the app
-- Dev: `npm run dev`
-- Build: `npm run build`
-- Start: `npm run start`
+```bash
+python3 -m http.server 8080
+```
 
-Note: this project forces webpack (`next dev --webpack` / `next build --webpack`) to avoid a Turbopack CSS panic in restricted environments.
+Then open:
 
-## Deploy (Vercel recommended)
-Set these environment variables in your host:
-- `DATABASE_URL` (managed Postgres such as Neon/Supabase/RDS)
-- `NEXTAUTH_SECRET` (random 32+ bytes)
-- `NEXTAUTH_URL` (e.g. `https://sdak.org`)
-- `IP_HASH_SALT` (random 32+ bytes)
-- `PUBLIC_BASE_URL` (e.g. `https://sdak.org`)
- - (If billing enabled) `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`
+```text
+http://localhost:8080
+```
 
-Then deploy as a standard Next.js app. Run `npm run db:deploy` against the production database once per release (or wire it into your CI).
+## Files
 
-More: `docs/DEPLOYMENT.md`.
+- `index.html` – UI and layout
+- `styles.css` – styling
+- `modern.html` – “Modern AI edition” experience (AI images)
+- `modern.css` – styling for the modern AI edition
+- `assets/book.pdf` – original PDF
+- `assets/pages/` – PNG pages (front cover, pages 1–19, back cover)
+- `assets/modern/pages/` – 2026 AI single-page images (inside pages)
+- `assets/modern/book.pdf` – modern book PDF (generated from images)
 
-## Admin login (after seed)
-Go to `/login` and sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
+Note: the flip animation uses a small library loaded from a public CDN. If the viewer can’t load it (for example, no internet access), the site will automatically fall back to a simple page-by-page viewer.
 
-## Self-serve signup
-Go to `/signup` to create an account + organization, then you’ll be redirected to billing checkout.
+## Coloring export note
+
+The “Open page to color” feature can *color* pages even when opened as a local file, but browser security may block **Download/Print** from `file://` pages. For best results, open the site from a local server (localhost) or host it online.
