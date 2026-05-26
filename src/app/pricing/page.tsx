@@ -11,6 +11,9 @@ function formatUsd(value: number) {
 }
 
 export default function PricingPage() {
+  const appBaseUrl = process.env.APP_BASE_URL || process.env.NEXTAUTH_URL || "";
+  const appHref = (path: string) => (appBaseUrl ? `${appBaseUrl}${path}` : path);
+
   const example = quoteAnnual(25000);
 
   return (
@@ -18,18 +21,18 @@ export default function PricingPage() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-16">
         <header className="flex items-center justify-between">
           <Link className="text-sm font-semibold tracking-tight" href="/">
-            SDAC
+            SDAK
           </Link>
           <div className="flex items-center gap-3">
             <Link className="text-sm underline" href="/demo">
               Request a demo
             </Link>
-            <Link
+            <a
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-              href="/login"
+              href={appHref("/login")}
             >
               Sign in
-            </Link>
+            </a>
           </div>
         </header>
 
@@ -65,11 +68,20 @@ export default function PricingPage() {
                 <li>Click analytics and CSV exports</li>
                 <li>Multiple staff logins (roles)</li>
                 <li>Human support and onboarding</li>
+                <li>
+                  Paid plans: your own org subdomain (e.g.{" "}
+                  <span className="font-mono">brown.sdak.org</span>) + custom
+                  slugs (e.g.{" "}
+                  <span className="font-mono">
+                    brown.sdak.org/dacotah-prairie-event-07-04-2026
+                  </span>
+                  )
+                </li>
               </ul>
               <div className="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-3">
-                <Link className="underline" href="/signup">
+                <a className="underline" href={appHref("/signup")}>
                   Get started →
-                </Link>
+                </a>
                 <Link className="text-zinc-600 underline" href="/demo">
                   Or request a demo
                 </Link>

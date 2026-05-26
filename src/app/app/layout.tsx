@@ -28,6 +28,9 @@ export default async function AppLayout({
             </Link>
             <nav className="ml-2 hidden items-center gap-3 text-sm text-zinc-600 sm:flex">
               <Link className="hover:underline" href="/app">
+                Overview
+              </Link>
+              <Link className="hover:underline" href="/app/links">
                 Links
               </Link>
               <Link className="hover:underline" href="/app/billing">

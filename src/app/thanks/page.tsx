@@ -1,12 +1,15 @@
 import Link from "next/link";
 
 export default function ThanksPage() {
+  const appBaseUrl = process.env.APP_BASE_URL || process.env.NEXTAUTH_URL || "";
+  const appHref = (path: string) => (appBaseUrl ? `${appBaseUrl}${path}` : path);
+
   return (
     <div className="min-h-dvh bg-zinc-50 text-zinc-900">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-16">
         <header className="flex items-center justify-between">
           <Link className="text-sm font-semibold tracking-tight" href="/">
-            SDAC
+            SDAK
           </Link>
           <Link className="text-sm underline" href="/pricing">
             Pricing
@@ -26,12 +29,12 @@ export default function ThanksPage() {
             >
               Back to home
             </Link>
-            <Link
+            <a
               className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 text-sm font-medium hover:bg-zinc-50"
-              href="/login"
+              href={appHref("/login")}
             >
               Sign in (if you already have access)
-            </Link>
+            </a>
           </div>
         </main>
       </div>

@@ -7,6 +7,7 @@ import CreateLinkForm from "@/app/app/create-link-form";
 
 type AppData = {
   orgId: string | null;
+  orgSlug: string | null;
   billing: { isPaid: boolean };
   links: Array<{
     id: string;
@@ -20,9 +21,19 @@ type AppData = {
 
 async function getData(userId: string) {
   const orgId = await getUserPrimaryOrgId(userId);
-  if (!orgId) return { orgId: null, links: [], billing: { isPaid: false } } satisfies AppData;
+  if (!orgId)
+    return {
+      orgId: null,
+      orgSlug: null,
+      links: [],
+      billing: { isPaid: false },
+    } satisfies AppData;
 
   const billing = await getOrgBillingStatus(orgId);
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { slug: true },
+  });
 
   const links = await prisma.link.findMany({
     where: { orgId, archivedAt: null },
@@ -38,7 +49,12 @@ async function getData(userId: string) {
     take: 50,
   });
 
-  return { orgId, links, billing: { isPaid: billing.isPaid } } satisfies AppData;
+  return {
+    orgId,
+    orgSlug: org?.slug ?? null,
+    links,
+    billing: { isPaid: billing.isPaid },
+  } satisfies AppData;
 }
 
 export default async function AppHome() {
@@ -46,7 +62,7 @@ export default async function AppHome() {
   const userId = session?.user ? (session.user as { id?: string }).id : null;
   if (!userId) return null;
 
-  const { links, billing } = await getData(userId);
+  const { links, billing, orgSlug } = await getData(userId);
 
   return (
     <div className="flex flex-col gap-8">
@@ -63,6 +79,10 @@ export default async function AppHome() {
       </div>
 
       <CreateLinkForm
+        orgSlug={orgSlug ?? undefined}
+        isPaid={billing.isPaid}
+        publicBaseUrl={process.env.PUBLIC_BASE_URL || "https://sdak.org"}
+        customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
       />
 
       <div className="rounded-xl border border-zinc-200 bg-white shadow-sm">

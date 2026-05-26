@@ -7,7 +7,15 @@ import { getUserPrimaryOrgId } from "@/lib/org";
 import { getOrgBillingStatus } from "@/lib/billing";
 
 const createSchema = z.object({
-  destinationUrl: z.string().url(),
+  code: z
+    .string()
+    .trim()
+    .min(3)
+    .max(80)
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/i)
+    .optional()
+    .or(z.literal("")),
+  destinationUrl: z.string().trim().url(),
   title: z.string().trim().max(120).optional().or(z.literal("")),
 });
 
@@ -63,11 +71,48 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: "Invalid payload" }, { status: 400 });
+    const flattened = parsed.error.flatten();
+    return Response.json(
+      {
+        error: "Invalid payload",
+        code: "INVALID_PAYLOAD",
+        fieldErrors: flattened.fieldErrors,
+      },
+      { status: 400 },
+    );
   }
 
+  const requestedCode = parsed.data.code?.trim() || null;
   const title = parsed.data.title?.trim() || null;
   const destinationUrl = parsed.data.destinationUrl;
+
+  if (requestedCode) {
+    if (!billing.isPaid) {
+      return Response.json(
+        { error: "Upgrade required for custom short slugs.", code: "UPGRADE_REQUIRED" },
+        { status: 402 },
+      );
+    }
+
+    try {
+      const link = await prisma.link.create({
+        data: {
+          code: requestedCode,
+          destinationUrl,
+          title: title ?? undefined,
+          orgId,
+          createdByUserId: userId,
+        },
+        select: { id: true, code: true },
+      });
+      return Response.json({ link }, { status: 201 });
+    } catch {
+      return Response.json(
+        { error: "That short slug is already taken.", code: "CODE_TAKEN" },
+        { status: 409 },
+      );
+    }
+  }
 
   // Generate a short code; retry on collision.
   for (let attempt = 0; attempt < 5; attempt++) {

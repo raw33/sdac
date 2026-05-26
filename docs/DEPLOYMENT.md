@@ -7,11 +7,14 @@
 ## Required environment variables
 - `DATABASE_URL`
 - `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL` (e.g. `https://sdak.org`)
+- `NEXTAUTH_URL` (e.g. `https://app.sdak.org`)
 
 Recommended:
 - `IP_HASH_SALT` (hashes IPs before storing)
 - `PUBLIC_BASE_URL` (e.g. `https://sdak.org`) for correct QR links behind proxies
+- `APP_BASE_URL` (e.g. `https://app.sdak.org`) so marketing pages can link into the app
+- `NEXT_PUBLIC_APP_BASE_URL` (same as `APP_BASE_URL`)
+- `CUSTOM_DOMAIN_ROOT` (e.g. `sdak.org`) for paid org subdomains like `brown.sdak.org`
 
 Billing (Stripe) — only required if you enable `/app/billing`:
 - `STRIPE_SECRET_KEY`

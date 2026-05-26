@@ -84,6 +84,14 @@ model ClickEvent {
   referer   String?
   userAgent String?
   ipHash    String?
+  country   String?
+  region    String?
+  city      String?
+  latitude  Float?
+  longitude Float?
+  deviceType String?
+  browser    String?
+  os         String?
 
   link   Link   @relation(fields: [linkId], references: [id], onDelete: Cascade)
   linkId String

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SDAC",
+  title: "SDAK",
   description: "Branded short links + QR codes for South Dakota communities.",
 };
 

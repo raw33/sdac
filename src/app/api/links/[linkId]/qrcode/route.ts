@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
+import { getOrgBillingStatus } from "@/lib/billing";
 
 export async function GET(
   _req: Request,
@@ -24,12 +25,24 @@ export async function GET(
   });
   if (!link) return new Response("Not found", { status: 404 });
 
+  const billing = await getOrgBillingStatus(orgId);
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { slug: true },
+  });
+
   const hdrs = await headers();
   const proto = hdrs.get("x-forwarded-proto") ?? "https";
   const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host");
 
-  const baseUrl = process.env.PUBLIC_BASE_URL || (host ? `${proto}://${host}` : "");
-  const shortUrl = `${baseUrl}/s/${link.code}`;
+  const customRoot = process.env.CUSTOM_DOMAIN_ROOT || "sdak.org";
+
+  const baseUrl =
+    billing.isPaid && org?.slug
+      ? `https://${org.slug}.${customRoot}`
+      : process.env.PUBLIC_BASE_URL || (host ? `${proto}://${host}` : "");
+
+  const shortUrl = billing.isPaid && org?.slug ? `${baseUrl}/${link.code}` : `${baseUrl}/s/${link.code}`;
 
   const png = await QRCode.toBuffer(shortUrl, {
     type: "png",

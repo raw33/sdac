@@ -3,10 +3,52 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashIpForAnalytics } from "@/lib/security";
 import { getOrgBillingStatus } from "@/lib/billing";
-
 function getHostname(hdrs: Headers) {
   const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host") ?? "";
   return host.split(":")[0]?.toLowerCase() || "";
+}
+
+function firstHeader(hdrs: Headers, keys: string[]) {
+  for (const key of keys) {
+    const value = hdrs.get(key);
+    if (value) return value;
+  }
+  return null;
+}
+
+function parseFloatOrNull(value: string | null) {
+  if (!value) return null;
+  const n = Number.parseFloat(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseDeviceType(userAgent: string | null) {
+  if (!userAgent) return null;
+  const ua = userAgent.toLowerCase();
+  if (ua.includes("ipad") || ua.includes("tablet")) return "tablet";
+  if (ua.includes("mobi") || ua.includes("iphone") || ua.includes("android")) return "mobile";
+  return "desktop";
+}
+
+function parseBrowser(userAgent: string | null) {
+  if (!userAgent) return null;
+  const ua = userAgent.toLowerCase();
+  if (ua.includes("edg/") || ua.includes("edge/")) return "Edge";
+  if (ua.includes("chrome/") && !ua.includes("chromium") && !ua.includes("edg/")) return "Chrome";
+  if (ua.includes("safari/") && !ua.includes("chrome/")) return "Safari";
+  if (ua.includes("firefox/")) return "Firefox";
+  return "Other";
+}
+
+function parseOs(userAgent: string | null) {
+  if (!userAgent) return null;
+  const ua = userAgent.toLowerCase();
+  if (ua.includes("windows nt")) return "Windows";
+  if (ua.includes("mac os x") || ua.includes("macintosh")) return "macOS";
+  if (ua.includes("android")) return "Android";
+  if (ua.includes("iphone") || ua.includes("ipad") || ua.includes("ios")) return "iOS";
+  if (ua.includes("linux")) return "Linux";
+  return "Other";
 }
 
 function getOrgSlugFromHostname(hostname: string) {
@@ -71,6 +113,17 @@ export async function GET(_req: Request, ctx: RouteContext<"/s/[code]">) {
   const forwardedFor = hdrs.get("x-forwarded-for");
   const ip = forwardedFor ? forwardedFor.split(",")[0]?.trim() : null;
 
+  // Prefer platform-provided geo headers (Vercel/Cloudflare). Do not store raw IP.
+  const country = firstHeader(hdrs, ["x-vercel-ip-country", "cf-ipcountry"]);
+  const region = firstHeader(hdrs, ["x-vercel-ip-country-region"]);
+  const city = firstHeader(hdrs, ["x-vercel-ip-city"]);
+  const latitude = parseFloatOrNull(firstHeader(hdrs, ["x-vercel-ip-latitude"]));
+  const longitude = parseFloatOrNull(firstHeader(hdrs, ["x-vercel-ip-longitude"]));
+
+  const deviceType = parseDeviceType(userAgent);
+  const browser = parseBrowser(userAgent);
+  const os = parseOs(userAgent);
+
   // Fire-and-forget analytics (best effort).
   prisma.clickEvent
     .create({
@@ -79,6 +132,14 @@ export async function GET(_req: Request, ctx: RouteContext<"/s/[code]">) {
         referer: referer ?? undefined,
         userAgent: userAgent ?? undefined,
         ipHash: hashIpForAnalytics(ip),
+        country: country ?? undefined,
+        region: region ?? undefined,
+        city: city ?? undefined,
+        latitude: latitude ?? undefined,
+        longitude: longitude ?? undefined,
+        deviceType: deviceType ?? undefined,
+        browser: browser ?? undefined,
+        os: os ?? undefined,
       },
     })
     .catch(() => {});

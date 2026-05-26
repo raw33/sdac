@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function DemoPage() {
+  const appBaseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL || "";
+  const appHref = (path: string) => (appBaseUrl ? `${appBaseUrl}${path}` : path);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,18 +15,18 @@ export default function DemoPage() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-16">
         <header className="flex items-center justify-between">
           <Link className="text-sm font-semibold tracking-tight" href="/">
-            SDAC
+            SDAK
           </Link>
           <div className="flex items-center gap-3">
             <Link className="text-sm underline" href="/pricing">
               Pricing
             </Link>
-            <Link
+            <a
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-              href="/login"
+              href={appHref("/login")}
             >
               Sign in
-            </Link>
+            </a>
           </div>
         </header>
 
@@ -33,7 +36,7 @@ export default function DemoPage() {
               Request a demo
             </h1>
             <p className="text-sm text-zinc-600">
-              Tell us who you are and what you want to use SDAC for. We’ll reply
+              Tell us who you are and what you want to use SDAK for. We’ll reply
               with a demo time and (if you want) a ready-to-sign annual invoice.
             </p>
           </div>
