@@ -16,6 +16,22 @@ Recommended:
 - `NEXT_PUBLIC_APP_BASE_URL` (same as `APP_BASE_URL`)
 - `CUSTOM_DOMAIN_ROOT` (e.g. `sdak.org`) for paid org subdomains like `brown.sdak.org`
 
+## Demo request auto-email (optional)
+When enabled, submitting `/demo` will immediately email the requester a walkthrough link + video.
+
+Choose one provider:
+- **Resend**:
+  - `RESEND_API_KEY`
+  - `EMAIL_FROM` (example: `SDAK <noreply@sdak.org>`)
+- **Webhook**:
+  - `EMAIL_WEBHOOK_URL` (expects JSON body `{ to, subject, text, html, replyTo }`)
+
+Optional:
+- `DEMO_REPLY_TO` (reply-to address on the walkthrough email)
+- `DEMO_WALKTHROUGH_URL` (defaults to `/demo-walkthrough`)
+- `DEMO_WALKTHROUGH_VIDEO_URL` (defaults to `/videos/demo-walkthrough.mp4`)
+- `DEMO_WALKTHROUGH_EMBED_URL` (optional iframe embed URL; easiest way to swap videos without redeploy)
+
 Billing (Stripe) — only required if you enable `/app/billing`:
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
