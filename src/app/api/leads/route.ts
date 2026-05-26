@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashIpForAnalytics } from "@/lib/security";
+import { sendDemoWalkthroughEmail } from "@/lib/demo-walkthrough-email";
 
 const leadSchema = z.object({
   name: z.string().trim().max(120).optional().or(z.literal("")),
@@ -52,5 +53,18 @@ export async function POST(req: Request) {
     },
   });
 
-  return Response.json({ ok: true }, { status: 201 });
+  const emailResult = await sendDemoWalkthroughEmail({
+    to: parsed.data.email.toLowerCase(),
+    name: parsed.data.name?.trim() || null,
+    org: parsed.data.org?.trim() || null,
+  });
+
+  return Response.json(
+    {
+      ok: true,
+      emailSent: emailResult.ok && !emailResult.skipped,
+      emailSkipped: emailResult.skipped,
+    },
+    { status: 201 }
+  );
 }

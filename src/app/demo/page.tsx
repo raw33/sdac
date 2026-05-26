@@ -11,8 +11,12 @@ export default function DemoPage() {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="min-h-dvh bg-zinc-50 text-zinc-900">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-10 px-6 py-16">
+    <div className="relative min-h-dvh bg-zinc-50 text-zinc-900">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-zinc-100 to-transparent"
+      />
+      <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-10 px-6 py-16">
         <header className="flex items-center justify-between">
           <Link className="text-sm font-semibold tracking-tight" href="/">
             SDAK
@@ -30,19 +34,32 @@ export default function DemoPage() {
           </div>
         </header>
 
-        <main className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Request a demo
+        <main className="flex flex-col gap-8">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-600">
+              <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-2.5 py-1">
+                10–15 minutes
+              </span>
+              <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-2.5 py-1">
+                QR + short links
+              </span>
+              <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-2.5 py-1">
+                Click analytics
+              </span>
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              See SDAK in action
             </h1>
-            <p className="text-sm text-zinc-600">
-              Tell us who you are and what you want to use SDAK for. We’ll reply
-              with a demo time and (if you want) a ready-to-sign annual invoice.
+            <p className="max-w-2xl text-sm text-zinc-600 sm:text-base">
+              Send this request and we’ll email you a quick setup walkthrough video
+              plus next steps for scheduling a live demo (and, if you want, a ready-to-sign annual invoice).
             </p>
           </div>
 
-          <form
-            className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"
+          <div className="grid gap-6 lg:grid-cols-5">
+            <div className="lg:col-span-3">
+              <form
+                className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"
             onSubmit={async (e) => {
               e.preventDefault();
               setIsLoading(true);
@@ -137,17 +154,52 @@ export default function DemoPage() {
                 We’ll never sell your info. You’re contacting us for service.
               </div>
               <button
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+                className="group inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-900 px-5 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 disabled:opacity-60"
                 type="submit"
                 disabled={isLoading}
               >
-                {isLoading ? "Sending…" : "Request demo"}
+                {isLoading ? "Sending…" : "Get demo + walkthrough video"}
+                <svg
+                  aria-hidden="true"
+                  className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.22 3.22a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 1 1-1.06-1.06l4.72-4.72H3.5a.75.75 0 0 1 0-1.5h11.44l-4.72-4.72a.75.75 0 0 1 0-1.06Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </button>
             </div>
-          </form>
+              </form>
+            </div>
+
+            <aside className="lg:col-span-2">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-700 shadow-sm">
+                <div className="text-sm font-semibold tracking-tight text-zinc-900">
+                  What you’ll see in the walkthrough
+                </div>
+                <ul className="mt-3 list-disc space-y-2 pl-4 text-sm text-zinc-700">
+                  <li>Create a custom short URL</li>
+                  <li>Edit the back-half for a campaign</li>
+                  <li>Share it and watch a click land</li>
+                  <li>Open the dashboard to see analytics</li>
+                </ul>
+                <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-600">
+                  Tip: Use your work email so the video reaches the right inbox.
+                </div>
+              </div>
+            </aside>
+          </div>
 
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-700 shadow-sm">
-            Prefer to just see pricing? <a className="underline" href="/pricing">Open pricing</a>.
+            Prefer to just see pricing?{" "}
+            <a className="underline" href="/pricing">
+              Open pricing
+            </a>
+            .
           </div>
         </main>
       </div>

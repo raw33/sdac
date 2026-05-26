@@ -16,6 +16,14 @@ Create `.env` (or copy from `.env.example` if you add one) with:
 - `NEXT_PUBLIC_APP_BASE_URL` (same as `APP_BASE_URL`)
 - `IP_HASH_SALT` (recommended)
 - Optional: `PUBLIC_BASE_URL` (used for QR generation behind proxies)
+ - Optional demo lead auto-email (choose one approach):
+   - `EMAIL_WEBHOOK_URL` (recommended; lets you swap providers without code changes)
+   - or `RESEND_API_KEY` + `EMAIL_FROM` (e.g. `SDAK <noreply@sdak.org>`)
+ - Optional demo walkthrough video:
+   - `DEMO_WALKTHROUGH_URL` (defaults to `/demo-walkthrough`)
+   - `DEMO_WALKTHROUGH_VIDEO_URL` (direct file link; defaults to `/videos/demo-walkthrough.mp4`)
+   - `DEMO_WALKTHROUGH_EMBED_URL` (optional iframe embed URL to override local file)
+   - `DEMO_REPLY_TO` (optional reply-to on the walkthrough email)
  - Optional billing (Stripe): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID`
  - Optional seed defaults: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ORG_NAME`, `ORG_SLUG`
 
