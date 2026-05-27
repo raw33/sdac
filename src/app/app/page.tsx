@@ -2,14 +2,19 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
-import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 import CreateLinkForm from "@/app/app/create-link-form";
 import RecentLinksTable from "@/app/app/recent-links-table";
 
 type AppData = {
   orgId: string | null;
   orgSlug: string | null;
-  billing: { isPaid: boolean };
+  entitlements: {
+    isPaid: boolean;
+    canSeeAnalytics: boolean;
+    canUseCustomSlugs: boolean;
+    canUseBrandedSubdomain: boolean;
+  };
   links: Array<{
     id: string;
     code: string;
@@ -27,10 +32,15 @@ async function getData(userId: string) {
       orgId: null,
       orgSlug: null,
       links: [],
-      billing: { isPaid: false },
+      entitlements: {
+        isPaid: false,
+        canSeeAnalytics: false,
+        canUseCustomSlugs: false,
+        canUseBrandedSubdomain: false,
+      },
     } satisfies AppData;
 
-  const billing = await getOrgBillingStatus(orgId);
+  const entitlements = await getOrgEntitlements(orgId);
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { slug: true },
@@ -54,7 +64,12 @@ async function getData(userId: string) {
     orgId,
     orgSlug: org?.slug ?? null,
     links,
-    billing: { isPaid: billing.isPaid },
+    entitlements: {
+      isPaid: entitlements.isPaid,
+      canSeeAnalytics: entitlements.canSeeAnalytics,
+      canUseCustomSlugs: entitlements.canUseCustomSlugs,
+      canUseBrandedSubdomain: entitlements.canUseBrandedSubdomain,
+    },
   } satisfies AppData;
 }
 
@@ -63,7 +78,7 @@ export default async function AppHome() {
   const userId = session?.user ? (session.user as { id?: string }).id : null;
   if (!userId) return null;
 
-  const { links, billing, orgSlug } = await getData(userId);
+  const { links, entitlements, orgSlug } = await getData(userId);
 
   return (
     <div className="flex flex-col gap-8">
@@ -72,7 +87,7 @@ export default async function AppHome() {
         <p className="text-sm text-zinc-600">
           Create branded short URLs and download QR codes.
         </p>
-        {!billing.isPaid ? (
+        {!entitlements.isPaid ? (
           <div className="text-xs text-zinc-500">
             You’re on the free trial. Upgrade to unlock click analytics and unlimited links.
           </div>
@@ -81,7 +96,8 @@ export default async function AppHome() {
 
       <CreateLinkForm
         orgSlug={orgSlug ?? undefined}
-        isPaid={billing.isPaid}
+        canUseCustomSlugs={entitlements.canUseCustomSlugs}
+        canUseBrandedSubdomain={entitlements.canUseBrandedSubdomain}
         publicBaseUrl={process.env.PUBLIC_BASE_URL || "https://sdak.org"}
         customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
       />
@@ -91,7 +107,7 @@ export default async function AppHome() {
           Recent links
         </div>
         <RecentLinksTable
-          billingIsPaid={billing.isPaid}
+          billingIsPaid={entitlements.canSeeAnalytics}
           links={links.map((l) => ({
             id: l.id,
             code: l.code,

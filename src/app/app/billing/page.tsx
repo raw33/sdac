@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUserPrimaryOrgId } from "@/lib/org";
 import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 import { prisma } from "@/lib/prisma";
 import BillingButtons from "@/app/app/billing/billing-buttons";
 import OrgSubdomainPicker from "@/app/_components/org-subdomain-picker";
@@ -20,7 +21,10 @@ export default async function BillingPage({
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) return null;
 
-  const billing = await getOrgBillingStatus(orgId);
+  const [billing, entitlements] = await Promise.all([
+    getOrgBillingStatus(orgId),
+    getOrgEntitlements(orgId),
+  ]);
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { slug: true },
@@ -41,10 +45,10 @@ export default async function BillingPage({
       </div>
 
       <OrgSubdomainPicker
-        billingIsPaid={billing.isPaid}
+        billingIsPaid={entitlements.isPaid}
         currentOrgSlug={org?.slug ?? null}
         customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
-        canClaim={billing.isPaid && !org?.slug}
+        canClaim={entitlements.canUseBrandedSubdomain && !org?.slug}
       />
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">

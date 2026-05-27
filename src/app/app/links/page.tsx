@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
-import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 import CreateLinkForm from "@/app/app/create-link-form";
 import LinksDashboard from "@/app/app/links/links-dashboard";
 import OrgSubdomainPicker from "@/app/_components/org-subdomain-picker";
@@ -22,7 +22,7 @@ async function getLinksData(userId: string) {
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) return null;
 
-  const billing = await getOrgBillingStatus(orgId);
+  const entitlements = await getOrgEntitlements(orgId);
 
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
@@ -54,8 +54,8 @@ async function getLinksData(userId: string) {
     clicks30d: null,
   }));
 
-  if (!billing.isPaid || baseRows.length === 0) {
-    return { billing, orgSlug: org?.slug ?? null, links: baseRows };
+  if (!entitlements.canSeeAnalytics || baseRows.length === 0) {
+    return { entitlements, orgSlug: org?.slug ?? null, links: baseRows };
   }
 
   const now = new Date();
@@ -86,7 +86,7 @@ async function getLinksData(userId: string) {
     clicks30d: map30d.get(l.id) ?? 0,
   }));
 
-  return { billing, orgSlug: org?.slug ?? null, links: enriched };
+  return { entitlements, orgSlug: org?.slug ?? null, links: enriched };
 }
 
 export default async function LinksPage() {
@@ -108,21 +108,24 @@ export default async function LinksPage() {
       </div>
 
       <OrgSubdomainPicker
-        billingIsPaid={data.billing.isPaid}
+        billingIsPaid={data.entitlements.isPaid}
         currentOrgSlug={data.orgSlug}
         customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
-        canClaim={data.billing.isPaid && !data.orgSlug}
+        canClaim={data.entitlements.canUseBrandedSubdomain && !data.orgSlug}
       />
 
       <CreateLinkForm
         orgSlug={data.orgSlug ?? undefined}
-        isPaid={data.billing.isPaid}
+        canUseCustomSlugs={data.entitlements.canUseCustomSlugs}
+        canUseBrandedSubdomain={data.entitlements.canUseBrandedSubdomain}
         publicBaseUrl={process.env.PUBLIC_BASE_URL || "https://sdak.org"}
         customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
       />
 
       <LinksDashboard
-        billingIsPaid={data.billing.isPaid}
+        billingIsPaid={data.entitlements.canSeeAnalytics}
+        canEditDestinations={data.entitlements.canEditDestinations}
+        canUseBrandedSubdomain={data.entitlements.canUseBrandedSubdomain}
         orgSlug={data.orgSlug}
         publicBaseUrl={process.env.PUBLIC_BASE_URL || "https://sdak.org"}
         customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}

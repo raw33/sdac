@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 
 export default function LinkEditor({
   linkId,
-  billingIsPaid,
+  canUseCustomSlugs,
+  canEditDestinations,
+  canUseBrandedSubdomain,
   orgSlug,
   publicBaseUrl,
   customDomainRoot,
@@ -14,7 +16,9 @@ export default function LinkEditor({
   initialDestinationUrl,
 }: {
   linkId: string;
-  billingIsPaid: boolean;
+  canUseCustomSlugs: boolean;
+  canEditDestinations: boolean;
+  canUseBrandedSubdomain: boolean;
   orgSlug: string | null;
   publicBaseUrl: string;
   customDomainRoot: string;
@@ -40,7 +44,7 @@ export default function LinkEditor({
   };
 
   const getPublicUrlForCode = (shortCode: string) => {
-    if (billingIsPaid && orgSlug) {
+    if (canUseBrandedSubdomain && orgSlug) {
       return `https://${orgSlug}.${customDomainRoot}/${shortCode}`;
     }
     return `${publicBaseUrl}/s/${shortCode}`;
@@ -106,10 +110,10 @@ export default function LinkEditor({
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="my-custom-slug"
-                  disabled={!billingIsPaid}
+                  disabled={!canUseCustomSlugs}
                 />
                 <span className="text-xs text-zinc-500">
-                  {billingIsPaid
+                  {canUseCustomSlugs
                     ? orgSlug
                       ? `Your link will be: ${getPublicUrlForCode(code || "your-slug")}`
                       : `Your link will be: ${getPublicUrlForCode(code || "your-slug")} (claim a subdomain to use ${customDomainRoot})`
@@ -134,9 +138,9 @@ export default function LinkEditor({
                   value={destinationUrl}
                   onChange={(e) => setDestinationUrl(e.target.value)}
                   placeholder="https://example.com"
-                  disabled={!billingIsPaid}
+                  disabled={!canEditDestinations}
                 />
-                {!billingIsPaid ? (
+                {!canEditDestinations ? (
                   <span className="text-xs text-zinc-500">
                     Upgrade required to change destinations.
                   </span>
@@ -151,7 +155,7 @@ export default function LinkEditor({
             </div>
 
             <div className="flex items-center justify-between gap-3 border-t border-zinc-200 px-5 py-4">
-              {!billingIsPaid ? (
+              {!canEditDestinations ? (
                 <a className="text-xs text-zinc-600 underline" href="/app/billing">
                   Upgrade for destination editing
                 </a>

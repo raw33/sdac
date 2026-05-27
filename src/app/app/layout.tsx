@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { getUserPrimaryOrgId } from "@/lib/org";
 import SignOutButton from "@/app/app/sign-out-button";
+import { isSuperuserEmail } from "@/lib/superuser";
 
 export default async function AppLayout({
   children,
@@ -17,6 +18,7 @@ export default async function AppLayout({
 
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) redirect("/onboarding");
+  const showAdmin = isSuperuserEmail(session.user.email);
 
   return (
     <div className="min-h-dvh bg-zinc-50 text-zinc-900">
@@ -39,6 +41,11 @@ export default async function AppLayout({
               <Link className="hover:underline" href="/app/leads">
                 Leads
               </Link>
+              {showAdmin ? (
+                <Link className="hover:underline" href="/app/admin">
+                  Admin
+                </Link>
+              ) : null}
             </nav>
           </div>
           <div className="flex items-center gap-3">

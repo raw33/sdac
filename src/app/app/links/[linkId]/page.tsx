@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
-import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 import LinkEditor from "@/app/app/links/[linkId]/link-editor";
 import AnalyticsWidgets from "@/app/app/links/[linkId]/analytics-widgets";
 
@@ -27,7 +27,7 @@ export default async function LinkDetailPage(
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) return notFound();
 
-  const billing = await getOrgBillingStatus(orgId);
+  const entitlements = await getOrgEntitlements(orgId);
 
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
@@ -55,18 +55,18 @@ export default async function LinkDetailPage(
   const from30d = new Date(now);
   from30d.setDate(from30d.getDate() - 30);
 
-  const [clicks7d, clicks30d] = billing.isPaid
+  const [clicks7d, clicks30d] = entitlements.canSeeAnalytics
     ? await Promise.all([
         prisma.clickEvent.count({ where: { linkId: link.id, clickedAt: { gte: from7d } } }),
         prisma.clickEvent.count({ where: { linkId: link.id, clickedAt: { gte: from30d } } }),
       ])
     : [null, null];
 
-  const analytics = billing.isPaid
+  const analytics = entitlements.canSeeAnalytics
     ? await getLinkAnalytics(link.id, from30d)
     : null;
 
-  const recentReferrers = billing.isPaid
+  const recentReferrers = entitlements.canSeeAnalytics
     ? await prisma.clickEvent.findMany({
         where: { linkId: link.id, clickedAt: { gte: from30d } },
         select: { referer: true },
@@ -76,7 +76,7 @@ export default async function LinkDetailPage(
     : [];
 
   const topReferrers = (() => {
-    if (!billing.isPaid) return [];
+    if (!entitlements.canSeeAnalytics) return [];
     const counts = new Map<string, number>();
     for (const r of recentReferrers) {
       const host = safeHost(r.referer) || "Direct / unknown";
@@ -88,7 +88,7 @@ export default async function LinkDetailPage(
       .map(([host, count]) => ({ host, count }));
   })();
 
-  const recentClicks = billing.isPaid
+  const recentClicks = entitlements.canSeeAnalytics
     ? await prisma.clickEvent.findMany({
         where: { linkId: link.id },
         orderBy: { clickedAt: "desc" },
@@ -125,7 +125,9 @@ export default async function LinkDetailPage(
         <div className="flex flex-wrap items-center justify-end gap-2">
           <LinkEditor
             linkId={link.id}
-            billingIsPaid={billing.isPaid}
+            canUseCustomSlugs={entitlements.canUseCustomSlugs}
+            canEditDestinations={entitlements.canEditDestinations}
+            canUseBrandedSubdomain={entitlements.canUseBrandedSubdomain}
             orgSlug={org?.slug ?? null}
             publicBaseUrl={process.env.PUBLIC_BASE_URL || "https://sdak.org"}
             customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
@@ -141,7 +143,7 @@ export default async function LinkDetailPage(
           >
             QR PNG
           </a>
-          {billing.isPaid ? (
+          {entitlements.canSeeAnalytics ? (
             <a
               className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium hover:bg-zinc-50"
               href={`/api/links/${link.id}/clicks?format=csv`}
@@ -168,14 +170,14 @@ export default async function LinkDetailPage(
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-zinc-500">Last 7 days</div>
-          <div className="mt-1 text-2xl font-semibold">{billing.isPaid ? clicks7d : "—"}</div>
-          {!billing.isPaid ? (
+          <div className="mt-1 text-2xl font-semibold">{entitlements.canSeeAnalytics ? clicks7d : "—"}</div>
+          {!entitlements.canSeeAnalytics ? (
             <div className="mt-1 text-xs text-zinc-500">Upgrade to unlock analytics.</div>
           ) : null}
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-zinc-500">Last 30 days</div>
-          <div className="mt-1 text-2xl font-semibold">{billing.isPaid ? clicks30d : "—"}</div>
+          <div className="mt-1 text-2xl font-semibold">{entitlements.canSeeAnalytics ? clicks30d : "—"}</div>
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-zinc-500">Created</div>
@@ -199,7 +201,7 @@ export default async function LinkDetailPage(
         </div>
       </div>
 
-      {billing.isPaid ? (
+      {entitlements.canSeeAnalytics ? (
         analytics ? (
           <AnalyticsWidgets
             timeseries={analytics.timeseries}
@@ -232,7 +234,7 @@ export default async function LinkDetailPage(
         <div className="border-b border-zinc-200 px-6 py-4 text-sm font-medium">
           Top referrers (last 30 days)
         </div>
-        {!billing.isPaid ? (
+        {!entitlements.canSeeAnalytics ? (
           <div className="px-6 py-6 text-sm text-zinc-600">Upgrade to see referrer breakdown.</div>
         ) : topReferrers.length === 0 ? (
           <div className="px-6 py-6 text-sm text-zinc-600">No referrer data yet.</div>
@@ -255,7 +257,7 @@ export default async function LinkDetailPage(
         <div className="border-b border-zinc-200 px-6 py-4 text-sm font-medium">
           Recent clicks
         </div>
-        {!billing.isPaid ? (
+        {!entitlements.canSeeAnalytics ? (
           <div className="px-6 py-6 text-sm text-zinc-600">
             Upgrade to view click analytics and export CSV.
           </div>

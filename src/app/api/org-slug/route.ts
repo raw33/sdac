@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 import { getUserOrgRole, getUserPrimaryOrgId } from "@/lib/org";
 
 const slugSchema = z
@@ -46,8 +46,8 @@ export async function POST(req: Request) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const billing = await getOrgBillingStatus(orgId);
-  if (!billing.isPaid) {
+  const entitlements = await getOrgEntitlements(orgId);
+  if (!entitlements.canUseBrandedSubdomain) {
     return Response.json(
       { error: "Upgrade required to claim a subdomain.", code: "UPGRADE_REQUIRED" },
       { status: 402 },
@@ -84,4 +84,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

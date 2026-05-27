@@ -3,7 +3,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
-import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 
 const patchSchema = z.object({
   code: z
@@ -40,20 +40,24 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ linkId: strin
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const billing = await getOrgBillingStatus(orgId);
+  const entitlements = await getOrgEntitlements(orgId);
 
   const requestedCode = parsed.data.code?.trim() || null;
   const title = parsed.data.title?.trim() || null;
   const destinationUrl = parsed.data.destinationUrl;
 
-  if (requestedCode && requestedCode !== existing.code && !billing.isPaid) {
+  if (requestedCode && requestedCode !== existing.code && !entitlements.canUseCustomSlugs) {
     return Response.json(
       { error: "Upgrade required to change the short slug.", code: "UPGRADE_REQUIRED" },
       { status: 402 },
     );
   }
 
-  if (typeof destinationUrl === "string" && destinationUrl !== existing.destinationUrl && !billing.isPaid) {
+  if (
+    typeof destinationUrl === "string" &&
+    destinationUrl !== existing.destinationUrl &&
+    !entitlements.canEditDestinations
+  ) {
     return Response.json(
       { error: "Upgrade required to change destinations." },
       { status: 402 },

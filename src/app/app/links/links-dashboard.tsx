@@ -31,21 +31,30 @@ function formatDate(value: string | Date) {
 
 function getShortUrl(
   code: string,
-  opts: { billingIsPaid: boolean; orgSlug: string | null; customDomainRoot: string; publicBaseUrl: string },
+  opts: {
+    canUseBrandedSubdomain: boolean;
+    orgSlug: string | null;
+    customDomainRoot: string;
+    publicBaseUrl: string;
+  },
 ) {
-  if (opts.billingIsPaid && opts.orgSlug) return `https://${opts.orgSlug}.${opts.customDomainRoot}/${code}`;
+  if (opts.canUseBrandedSubdomain && opts.orgSlug) return `https://${opts.orgSlug}.${opts.customDomainRoot}/${code}`;
   return `${opts.publicBaseUrl.replace(/\/$/, "")}/s/${code}`;
 }
 
 export default function LinksDashboard({
   links,
   billingIsPaid,
+  canEditDestinations,
+  canUseBrandedSubdomain,
   orgSlug,
   customDomainRoot,
   publicBaseUrl,
 }: {
   links: LinkRow[];
   billingIsPaid: boolean;
+  canEditDestinations: boolean;
+  canUseBrandedSubdomain: boolean;
   orgSlug: string | null;
   customDomainRoot: string;
   publicBaseUrl: string;
@@ -232,7 +241,7 @@ export default function LinksDashboard({
               ) : (
                 filtered.map((l) => {
                   const shortUrl = getShortUrl(l.code, {
-                    billingIsPaid,
+                    canUseBrandedSubdomain,
                     orgSlug,
                     customDomainRoot,
                     publicBaseUrl,
@@ -394,9 +403,9 @@ export default function LinksDashboard({
                   value={editDestinationUrl}
                   onChange={(e) => setEditDestinationUrl(e.target.value)}
                   placeholder="https://example.com"
-                  disabled={!billingIsPaid}
+                  disabled={!canEditDestinations}
                 />
-                {!billingIsPaid ? (
+                {!canEditDestinations ? (
                   <span className="text-xs text-zinc-500">
                     Upgrade required to edit destinations (your link can stay the same while the destination changes).
                   </span>
@@ -427,7 +436,7 @@ export default function LinksDashboard({
                   type="button"
                   className="h-10 rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
                   onClick={saveEdit}
-                  disabled={editSaving || (!billingIsPaid && editDestinationUrl !== editing.destinationUrl)}
+                  disabled={editSaving || (!canEditDestinations && editDestinationUrl !== editing.destinationUrl)}
                 >
                   {editSaving ? "Saving…" : "Save changes"}
                 </button>

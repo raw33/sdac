@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashIpForAnalytics } from "@/lib/security";
-import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 function getHostname(hdrs: Headers) {
   const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host") ?? "";
   return host.split(":")[0]?.toLowerCase() || "";
@@ -82,8 +82,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/s/[code]">) {
   }
 
   if (org) {
-    const billing = await getOrgBillingStatus(org.id);
-    if (!billing.isPaid) {
+    const entitlements = await getOrgEntitlements(org.id);
+    if (!entitlements.canUseBrandedSubdomain) {
       redirect("https://sdak.org/pricing");
     }
   }

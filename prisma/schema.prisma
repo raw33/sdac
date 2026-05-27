@@ -39,6 +39,13 @@ model Organization {
   subscriptionStatus   String?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean     @default(false)
+
+  demoMaxLinks              Int?
+  demoAllowAnalytics        Boolean    @default(false)
+  demoAllowCustomSlugs      Boolean    @default(false)
+  demoAllowBrandedSubdomain Boolean    @default(false)
+  demoAllowDestinationEdit  Boolean    @default(false)
+  demoExpiresAt             DateTime?
 }
 
 model OrgMember {

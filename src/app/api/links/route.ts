@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserPrimaryOrgId } from "@/lib/org";
-import { getOrgBillingStatus } from "@/lib/billing";
+import { getOrgEntitlements } from "@/lib/entitlements";
 
 const createSchema = z.object({
   code: z
@@ -52,12 +52,12 @@ export async function POST(req: Request) {
   const orgId = await getUserPrimaryOrgId(userId);
   if (!orgId) return Response.json({ error: "No org" }, { status: 400 });
 
-  const billing = await getOrgBillingStatus(orgId);
-  if (!billing.isPaid) {
+  const entitlements = await getOrgEntitlements(orgId);
+  if (!entitlements.isPaid) {
     const linkCount = await prisma.link.count({
       where: { orgId, archivedAt: null },
     });
-    if (linkCount >= 1) {
+    if (linkCount >= entitlements.maxActiveLinks) {
       return Response.json(
         {
           error: "Trial limit reached. Upgrade to create more links.",
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
   const destinationUrl = parsed.data.destinationUrl;
 
   if (requestedCode) {
-    if (!billing.isPaid) {
+    if (!entitlements.canUseCustomSlugs) {
       return Response.json(
         { error: "Upgrade required for custom short slugs.", code: "UPGRADE_REQUIRED" },
         { status: 402 },

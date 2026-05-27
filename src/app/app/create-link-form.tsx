@@ -4,15 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function CreateLinkForm({
-  isPaid = false,
   orgSlug,
   publicBaseUrl,
   customDomainRoot,
+  canUseCustomSlugs = false,
+  canUseBrandedSubdomain = false,
 }: {
-  isPaid?: boolean;
   orgSlug?: string;
   publicBaseUrl?: string;
   customDomainRoot?: string;
+  canUseCustomSlugs?: boolean;
+  canUseBrandedSubdomain?: boolean;
 }) {
   const router = useRouter();
   const [destinationUrl, setDestinationUrl] = useState("");
@@ -27,10 +29,10 @@ export default function CreateLinkForm({
     null,
   );
 
-  const showCustomSlug = Boolean(isPaid);
+  const showCustomSlug = Boolean(canUseCustomSlugs);
 
   const getPublicUrlForCode = (shortCode: string) => {
-    if (showCustomSlug && customDomainRoot && orgSlug) {
+    if (canUseBrandedSubdomain && customDomainRoot && orgSlug) {
       return `https://${orgSlug}.${customDomainRoot}/${shortCode}`;
     }
     const base = publicBaseUrl || (typeof window !== "undefined" ? window.location.origin : "");
