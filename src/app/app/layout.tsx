@@ -24,7 +24,7 @@ export default async function AppLayout({
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <Link className="text-sm font-semibold tracking-tight" href="/">
-              SDAC
+              SDak
             </Link>
             <nav className="ml-2 hidden items-center gap-3 text-sm text-zinc-600 sm:flex">
               <Link className="hover:underline" href="/app">

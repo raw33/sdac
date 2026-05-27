@@ -42,7 +42,7 @@ export default function PricingPage() {
               Transparent pricing, sized to your county.
             </h1>
             <p className="text-base leading-7 text-zinc-600">
-              SDAC is built for municipalities, chambers, and EDOs. Pricing is
+              SDak is built for municipalities, chambers, and EDOs. Pricing is
               annual and scales with the population you serve—simple and easy to
               budget.
             </p>

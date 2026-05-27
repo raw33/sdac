@@ -31,7 +31,7 @@ export default async function BillingPage({
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">Billing</h1>
         <p className="text-sm text-zinc-600">
-          Try SDAC with 1 link for free. Upgrade for unlimited links and analytics.
+          Try SDak with 1 link for free. Upgrade for unlimited links and analytics.
         </p>
       </div>
 

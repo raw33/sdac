@@ -16,7 +16,7 @@ export default function LoginPage() {
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
           <p className="text-sm text-zinc-600">
-            Use your SDAC account, or sign in with Google.
+            Use your SDak account, or sign in with Google.
           </p>
         </div>
 
