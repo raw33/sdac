@@ -23,11 +23,15 @@ export default function OrgSubdomainPicker({
   billingIsPaid,
   currentOrgSlug,
   canClaim,
+  upgradeMode = "link",
+  upgradeHref = "/app/billing?startCheckout=1",
 }: {
   customDomainRoot: string;
   billingIsPaid: boolean;
   currentOrgSlug: string | null;
   canClaim?: boolean;
+  upgradeMode?: "link" | "submit" | "none";
+  upgradeHref?: string;
 }) {
   const [input, setInput] = useState("");
   const [state, setState] = useState<CheckState>({ status: "idle" });
@@ -100,13 +104,22 @@ export default function OrgSubdomainPicker({
             <span className="font-mono text-zinc-900">your-org.{customDomainRoot}/summer-fair</span>.
           </div>
         </div>
-        {!billingIsPaid ? (
-          <a
-            className="mt-3 inline-flex h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium hover:bg-zinc-50 sm:mt-0"
-            href="/app/billing"
-          >
-            Upgrade
-          </a>
+        {!billingIsPaid && upgradeMode !== "none" ? (
+          upgradeMode === "submit" ? (
+            <button
+              type="submit"
+              className="mt-3 inline-flex h-10 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white hover:bg-zinc-800 sm:mt-0"
+            >
+              Continue to billing
+            </button>
+          ) : (
+            <a
+              className="mt-3 inline-flex h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium hover:bg-zinc-50 sm:mt-0"
+              href={upgradeHref}
+            >
+              Upgrade
+            </a>
+          )
         ) : null}
       </div>
 
