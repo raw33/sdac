@@ -196,8 +196,8 @@ export default function CreateLinkForm({
         <div className="text-xs text-zinc-500">
           {showCustomSlug
             ? orgSlug
-              ? "Your org subdomain is included for paid plans."
-              : "Custom slugs are enabled on paid plans."
+              ? "Your org subdomain is active for branded links."
+              : "Custom slugs are enabled. Claim your org subdomain to use branded URLs."
             : "A short code is generated automatically."}
         </div>
         <button

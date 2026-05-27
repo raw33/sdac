@@ -95,14 +95,20 @@ function Donut({
   const c = 2 * Math.PI * r;
 
   const arcs = useMemo(() => {
-    let offset = 0;
     const palette = ["#18181b", "#3f3f46", "#71717a", "#a1a1aa", "#d4d4d8"];
-    return normalized.map((row, idx) => {
-      const len = c * row.pct;
-      const start = offset;
-      offset += len;
-      return { ...row, len, start, color: palette[idx % palette.length] };
-    });
+    return normalized.reduce<
+      { offset: number; arcs: Array<BreakdownRow & { pct: number; len: number; start: number; color: string }> }
+    >(
+      (acc, row, idx) => {
+        const len = c * row.pct;
+        const start = acc.offset;
+        return {
+          offset: start + len,
+          arcs: [...acc.arcs, { ...row, len, start, color: palette[idx % palette.length] }],
+        };
+      },
+      { offset: 0, arcs: [] },
+    ).arcs;
   }, [normalized, c]);
 
   const total = rows.reduce((s, r) => s + r.value, 0);
@@ -341,4 +347,3 @@ export default function AnalyticsWidgets({
     </div>
   );
 }
-

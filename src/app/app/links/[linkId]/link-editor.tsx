@@ -110,7 +110,9 @@ export default function LinkEditor({
                 />
                 <span className="text-xs text-zinc-500">
                   {billingIsPaid
-                    ? `Your link will be: ${getPublicUrlForCode(code || "your-slug")}`
+                    ? orgSlug
+                      ? `Your link will be: ${getPublicUrlForCode(code || "your-slug")}`
+                      : `Your link will be: ${getPublicUrlForCode(code || "your-slug")} (claim a subdomain to use ${customDomainRoot})`
                     : "Upgrade required to change the short slug."}
                 </span>
               </label>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import OrgSubdomainPicker from "@/app/_components/org-subdomain-picker";
 
 export default function SignupPage() {
   const [orgName, setOrgName] = useState("");
@@ -72,6 +73,12 @@ export default function SignupPage() {
                 required
               />
             </label>
+
+            <OrgSubdomainPicker
+              billingIsPaid={false}
+              currentOrgSlug={null}
+              customDomainRoot="sdak.org"
+            />
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium">Email</span>
               <input
@@ -121,4 +128,3 @@ export default function SignupPage() {
     </div>
   );
 }
-

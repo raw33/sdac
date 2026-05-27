@@ -6,11 +6,6 @@ import { getUserPrimaryOrgId } from "@/lib/org";
 
 const schema = z.object({
   orgName: z.string().trim().min(2).max(120),
-  orgSlug: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid slug"),
 });
 
 export async function POST(req: Request) {
@@ -30,7 +25,7 @@ export async function POST(req: Request) {
   try {
     const result = await prisma.$transaction(async (tx) => {
       const org = await tx.organization.create({
-        data: { name: parsed.data.orgName, slug: parsed.data.orgSlug },
+        data: { name: parsed.data.orgName, slug: null },
         select: { id: true },
       });
 
@@ -49,7 +44,7 @@ export async function POST(req: Request) {
     return Response.json({ ok: true, orgId: result.id }, { status: 201 });
   } catch {
     return Response.json(
-      { error: "Could not create organization (slug may already exist)." },
+      { error: "Could not create organization." },
       { status: 500 },
     );
   }

@@ -4,6 +4,7 @@ import { getUserPrimaryOrgId } from "@/lib/org";
 import { getOrgBillingStatus } from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
 import BillingButtons from "@/app/app/billing/billing-buttons";
+import OrgSubdomainPicker from "@/app/_components/org-subdomain-picker";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,10 @@ export default async function BillingPage({
   if (!orgId) return null;
 
   const billing = await getOrgBillingStatus(orgId);
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { slug: true },
+  });
   const linkCount = await prisma.link.count({
     where: { orgId, archivedAt: null },
   });
@@ -34,6 +39,13 @@ export default async function BillingPage({
           Try SDak with 1 link for free. Upgrade for unlimited links and analytics.
         </p>
       </div>
+
+      <OrgSubdomainPicker
+        billingIsPaid={billing.isPaid}
+        currentOrgSlug={org?.slug ?? null}
+        customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
+        canClaim={billing.isPaid && !org?.slug}
+      />
 
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-3">

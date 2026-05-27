@@ -5,6 +5,7 @@ import { getUserPrimaryOrgId } from "@/lib/org";
 import { getOrgBillingStatus } from "@/lib/billing";
 import CreateLinkForm from "@/app/app/create-link-form";
 import LinksDashboard from "@/app/app/links/links-dashboard";
+import OrgSubdomainPicker from "@/app/_components/org-subdomain-picker";
 
 type LinkRow = {
   id: string;
@@ -105,6 +106,13 @@ export default async function LinksPage() {
           Create branded short URLs, share them anywhere, and track performance.
         </p>
       </div>
+
+      <OrgSubdomainPicker
+        billingIsPaid={data.billing.isPaid}
+        currentOrgSlug={data.orgSlug}
+        customDomainRoot={process.env.CUSTOM_DOMAIN_ROOT || "sdak.org"}
+        canClaim={data.billing.isPaid && !data.orgSlug}
+      />
 
       <CreateLinkForm
         orgSlug={data.orgSlug ?? undefined}

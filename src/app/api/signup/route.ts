@@ -1,6 +1,5 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { nanoid } from "nanoid";
 import { prisma } from "@/lib/prisma";
 
 const schema = z.object({
@@ -8,16 +7,6 @@ const schema = z.object({
   password: z.string().min(8).max(200),
   orgName: z.string().trim().min(2).max(80),
 });
-
-function slugify(input: string) {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/['"]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 32);
-}
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -41,19 +30,6 @@ export async function POST(req: Request) {
     );
   }
 
-  let slugBase = slugify(orgName);
-  if (!slugBase) slugBase = `org-${nanoid(6).toLowerCase()}`;
-
-  let slug = slugBase;
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const exists = await prisma.organization.findUnique({
-      where: { slug },
-      select: { id: true },
-    });
-    if (!exists) break;
-    slug = `${slugBase}-${nanoid(4).toLowerCase()}`;
-  }
-
   try {
     await prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
@@ -61,7 +37,7 @@ export async function POST(req: Request) {
         select: { id: true },
       });
       const org = await tx.organization.create({
-        data: { name: orgName, slug },
+        data: { name: orgName, slug: null },
         select: { id: true },
       });
       await tx.orgMember.create({
@@ -75,4 +51,3 @@ export async function POST(req: Request) {
 
   return Response.json({ ok: true }, { status: 201 });
 }
-

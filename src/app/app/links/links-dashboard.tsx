@@ -239,7 +239,15 @@ export default function LinksDashboard({
                   });
 
                   return (
-                    <tr key={l.id} className="border-t border-zinc-200 align-top">
+                    <tr
+                      key={l.id}
+                      className="cursor-pointer border-t border-zinc-200 align-top hover:bg-zinc-50"
+                      onClick={(e) => {
+                        const target = e.target as HTMLElement | null;
+                        if (target?.closest("a,button,input,select,textarea")) return;
+                        router.push(`/app/links/${l.id}`);
+                      }}
+                    >
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
                           <div className="font-medium">
@@ -253,13 +261,15 @@ export default function LinksDashboard({
                               href={shortUrl}
                               target="_blank"
                               rel="noreferrer"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               {shortUrl.replace(/^https?:\/\//, "")}
                             </a>
                             <button
                               type="button"
                               className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium hover:bg-zinc-50"
-                              onClick={async () => {
+                              onClick={async (e) => {
+                                e.stopPropagation();
                                 await navigator.clipboard.writeText(shortUrl);
                               }}
                             >
@@ -278,6 +288,7 @@ export default function LinksDashboard({
                           target="_blank"
                           rel="noreferrer"
                           title={l.destinationUrl}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {l.destinationUrl}
                         </a>
@@ -298,6 +309,7 @@ export default function LinksDashboard({
                           <a
                             className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium hover:bg-zinc-50"
                             href={`/app/links/${l.id}`}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             Details
                           </a>
@@ -306,20 +318,27 @@ export default function LinksDashboard({
                             href={`/api/links/${l.id}/qrcode`}
                             target="_blank"
                             rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             QR
                           </a>
                           <button
                             type="button"
                             className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium hover:bg-zinc-50"
-                            onClick={() => openEdit(l)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEdit(l);
+                            }}
                           >
                             Edit
                           </button>
                           <button
                             type="button"
                             className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
-                            onClick={() => archiveLink(l)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void archiveLink(l);
+                            }}
                           >
                             Archive
                           </button>
@@ -420,4 +439,3 @@ export default function LinksDashboard({
     </div>
   );
 }
-

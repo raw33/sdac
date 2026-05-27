@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import OrgSubdomainPicker from "@/app/_components/org-subdomain-picker";
 
 export default function OnboardingForm() {
   const router = useRouter();
   const [orgName, setOrgName] = useState("");
-  const [orgSlug, setOrgSlug] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +20,7 @@ export default function OnboardingForm() {
         const res = await fetch("/api/onboarding", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ orgName, orgSlug }),
+          body: JSON.stringify({ orgName }),
         });
         if (!res.ok) {
           const body = (await res.json().catch(() => null)) as
@@ -45,20 +45,12 @@ export default function OnboardingForm() {
             required
           />
         </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Org slug</span>
-          <input
-            className="h-11 rounded-lg border border-zinc-200 px-3 font-mono outline-none focus:border-zinc-400"
-            value={orgSlug}
-            onChange={(e) => setOrgSlug(e.target.value)}
-            placeholder="aberdeen"
-            required
-          />
-          <span className="text-xs text-zinc-500">
-            Used internally and in future custom subdomains (letters, numbers,
-            hyphens).
-          </span>
-        </label>
+
+        <OrgSubdomainPicker
+          billingIsPaid={false}
+          currentOrgSlug={null}
+          customDomainRoot="sdak.org"
+        />
         {error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import OrgSubdomainPicker from "@/app/_components/org-subdomain-picker";
 
 type SetupPayload = {
   orgName: string;
-  orgSlug: string;
   name?: string;
   email: string;
   password: string;
@@ -13,7 +13,6 @@ type SetupPayload = {
 
 export default function SetupForm() {
   const [orgName, setOrgName] = useState("");
-  const [orgSlug, setOrgSlug] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +28,6 @@ export default function SetupForm() {
         setError(null);
         const payload: SetupPayload = {
           orgName,
-          orgSlug,
           name: name.trim() ? name.trim() : undefined,
           email,
           password,
@@ -68,17 +66,13 @@ export default function SetupForm() {
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Org slug</span>
-          <input
-            className="h-11 rounded-lg border border-zinc-200 px-3 outline-none focus:border-zinc-400"
-            value={orgSlug}
-            onChange={(e) => setOrgSlug(e.target.value)}
-            placeholder="aberdeen"
-            required
+        <div className="md:col-span-2">
+          <OrgSubdomainPicker
+            billingIsPaid={false}
+            currentOrgSlug={null}
+            customDomainRoot="sdak.org"
           />
-          <span className="text-xs text-zinc-500">Used internally.</span>
-        </label>
+        </div>
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium">Your name</span>
