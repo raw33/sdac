@@ -148,8 +148,8 @@ export default function OrgSubdomainPicker({
           </div>
         ) : null}
         {state.status === "available" ? (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-xs text-emerald-700">
+          <div className="flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs font-medium text-emerald-800">
               Available: <span className="font-mono">{state.slug}.{customDomainRoot}</span>
             </div>
             {billingIsPaid && canClaim ? (
@@ -165,14 +165,28 @@ export default function OrgSubdomainPicker({
           </div>
         ) : null}
         {state.status === "taken" ? (
-          <div className="text-xs text-zinc-600">
-            Taken: <span className="font-mono">{state.slug}.{customDomainRoot}</span>
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-800">
+            Not available: <span className="font-mono">{state.slug}.{customDomainRoot}</span>
           </div>
         ) : null}
         {state.status === "error" ? (
           <div className="text-xs text-red-700">{state.message}</div>
         ) : null}
       </div>
+
+      {state.status === "available" || state.status === "taken" ? (
+        <div className="mt-3 text-xs text-zinc-600">
+          {billingIsPaid ? (
+            canClaim ? (
+              <>You can lock this in now by claiming it.</>
+            ) : (
+              <>You’ll need a paid account to lock in a custom domain/slug.</>
+            )
+          ) : (
+            <>You’ll need a paid account to lock in a custom domain/slug.</>
+          )}
+        </div>
+      ) : null}
 
       {!billingIsPaid ? (
         <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700">
@@ -186,4 +200,3 @@ export default function OrgSubdomainPicker({
     </div>
   );
 }
-
